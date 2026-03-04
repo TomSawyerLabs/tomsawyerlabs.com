@@ -23,7 +23,7 @@ export default function Home() {
     <main className="container">
       <div className="logo" dangerouslySetInnerHTML={{ __html: logo }} />
       <h1>Home of our Open Source projects</h1>
-      <nav className="social-links" aria-label="Social links">
+      <h1>
         <a
           href="https://github.com/TomSawyerLabs"
           className="social-link"
@@ -36,7 +36,7 @@ export default function Home() {
             />
             <img src="/github-mark.svg" alt="GitHub" />
           </picture>
-        </a>
+        </a>{" "}
         <a
           href="https://facebook.com/TomSawyerLabs"
           className="social-link"
@@ -50,7 +50,7 @@ export default function Home() {
             <img src="/Facebook_Logo_Primary.png" alt="Facebook" />
           </picture>
         </a>
-      </nav>
+      </h1>
     </main>
   );
 }

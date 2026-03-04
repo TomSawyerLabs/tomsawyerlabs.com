@@ -30,6 +30,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <div
+          dangerouslySetInnerHTML={{
+            __html: "<!-- Do the math, save the world. -->",
+          }}
+        />
       </body>
     </html>
   );

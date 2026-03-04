@@ -32,22 +32,20 @@ p {
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-}
-
-.logo svg {
-  max-width: 600px;
   width: 100%;
 }
 
-.social-links {
-  display: flex;
-  gap: 0.5em;
-  font-size: 1.5rem;
+.logo {
+  width: 100%;
+  max-width: 600px;
+  line-height: 0;
 }
 
 .social-link {
   display: inline-block;
+  vertical-align: text-bottom;
   text-decoration: none;
+  margin: 0 0.25em;
   clip-path: circle(50%);
   -webkit-clip-path: circle(50%);
   overflow: hidden;
