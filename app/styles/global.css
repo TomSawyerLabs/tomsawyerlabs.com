@@ -1,0 +1,89 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0 2rem;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  background-color: Canvas;
+  color: CanvasText;
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+}
+
+.logo svg {
+  max-width: 600px;
+  width: 100%;
+}
+
+.social-links {
+  display: flex;
+  gap: 0.5em;
+  font-size: 1.5rem;
+}
+
+.social-link {
+  display: inline-block;
+  text-decoration: none;
+  clip-path: circle(50%);
+  -webkit-clip-path: circle(50%);
+  overflow: hidden;
+  line-height: 1;
+}
+
+.social-link picture {
+  display: block;
+}
+
+.social-link img {
+  height: 1em;
+  display: block;
+}
+
+.social-link:hover img {
+  transform: scale(1.15);
+}
+
+/* 404 page */
+.hero {
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+}
+
+.tagline {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: LinkText;
+}
