@@ -28,13 +28,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <footer className="site-footer">Do the math, change the world!</footer>
         <ScrollRestoration />
         <Scripts />
-        <div
-          dangerouslySetInnerHTML={{
-            __html: "<!-- Do the math, save the world. -->",
-          }}
-        />
       </body>
     </html>
   );
