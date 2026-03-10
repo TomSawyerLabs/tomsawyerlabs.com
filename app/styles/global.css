@@ -1,5 +1,29 @@
 :root {
   color-scheme: light dark;
+  --gs1: rgba(245, 158, 11, 0.25);
+  --gs2: rgba(20, 184, 166, 0.22);
+  --gs3: rgba(99, 102, 241, 0.2);
+  --gs4: rgba(236, 72, 153, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gs1: rgba(245, 158, 11, 0.12);
+    --gs2: rgba(20, 184, 166, 0.1);
+    --gs3: rgba(99, 102, 241, 0.1);
+    --gs4: rgba(236, 72, 153, 0.09);
+  }
+}
+
+html {
+  min-height: 100%;
+  background-color: Canvas;
+  background-image:
+    radial-gradient(ellipse at var(--gx1, 15%) var(--gy1, 20%), var(--gs1) 0%, transparent 45%),
+    radial-gradient(ellipse at var(--gx2, 85%) var(--gy2, 10%), var(--gs2) 0%, transparent 45%),
+    radial-gradient(ellipse at var(--gx3, 70%) var(--gy3, 80%), var(--gs3) 0%, transparent 45%),
+    radial-gradient(ellipse at var(--gx4, 30%) var(--gy4, 90%), var(--gs4) 0%, transparent 45%);
+  background-repeat: no-repeat;
 }
 
 body {
@@ -11,7 +35,6 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  background-color: Canvas;
   color: CanvasText;
   text-align: center;
 }
