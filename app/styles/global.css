@@ -19,10 +19,26 @@ html {
   min-height: 100%;
   background-color: Canvas;
   background-image:
-    radial-gradient(ellipse at var(--gx1, 15%) var(--gy1, 20%), var(--gs1) 0%, transparent 45%),
-    radial-gradient(ellipse at var(--gx2, 85%) var(--gy2, 10%), var(--gs2) 0%, transparent 45%),
-    radial-gradient(ellipse at var(--gx3, 70%) var(--gy3, 80%), var(--gs3) 0%, transparent 45%),
-    radial-gradient(ellipse at var(--gx4, 30%) var(--gy4, 90%), var(--gs4) 0%, transparent 45%);
+    radial-gradient(
+      ellipse at var(--gx1, 15%) var(--gy1, 20%),
+      var(--gs1) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at var(--gx2, 85%) var(--gy2, 10%),
+      var(--gs2) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at var(--gx3, 70%) var(--gy3, 80%),
+      var(--gs3) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at var(--gx4, 30%) var(--gy4, 90%),
+      var(--gs4) 0%,
+      transparent 45%
+    );
   background-repeat: no-repeat;
 }
 
