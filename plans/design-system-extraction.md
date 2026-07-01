@@ -137,7 +137,33 @@ React/react-dom are **peerDependencies** (^19), external in the build. Package i
      rolldown-plugin-dts hoisted). Reproduced via manual rebuild in `node_modules`.
 - Local builds (in the ui repo root) DO emit `dist/index.d.ts` correctly.
 
-### RESOLVED — keep build-on-install, fix dts via tsc (user choice)
+### FINAL — ship TypeScript source, no build (v0.2.0)
+
+Build-on-install was abandoned after a 4th failure on CI: `bun install --frozen-lockfile`
+died with `tsdown: command not found`. Root cause (confirmed from the committed lockfile):
+bun records **only the git dep's `peerDependencies`** in `bun.lock` (tsdown/typescript
+appear nowhere), so a frozen CI install never installs the build toolchain, and `prepare`
+can't run. The "prepare installs devDeps" contract holds for a normal dev install but
+**not** under `--frozen-lockfile`.
+
+Resolution (user's idea): **`@tomsawyerlabs/ui` ships TypeScript source**; the consuming
+app's bundler compiles it (the "internal / just-in-time source packages" pattern).
+
+- `exports."."` → `./src/index.ts` (types + import). No `dist`, no `prepare`, no build,
+  no `trustedDependencies`, no committed artifacts. Still a plain git dependency.
+- Logo reads `./logo.svg` via Vite's `?raw`; consumers need a Vite-style bundler + `vite/client` types.
+- Consumer must transpile the package: site adds `ssr.noExternal: ["@tomsawyerlabs/ui"]`
+  (needed for the SSG prerender's server build).
+- Types come straight from source → the whole `.d.ts`/node_modules problem is gone.
+
+**Verified through the exact CI path:** wiped `node_modules` → `bun install --frozen-lockfile`
+(exit 0) → typecheck + build (incl. prerender) + Playwright chromium 6/6, all green.
+ui is at **v0.2.0**; site consumes `github:TomSawyerLabs/ui#v0.2.0`.
+
+Constraint to remember: all consumers must be TS-compiling bundlers (Vite). Fine for both
+TSL sites; would need a build/publish step only if a plain-Node consumer ever appears.
+
+<details><summary>Superseded attempt — build-on-install + tsc dts (v0.1.x)</summary>
 
 The three failures are all fixable; build-on-install now works end-to-end:
 
@@ -152,6 +178,9 @@ The three failures are all fixable; build-on-install now works end-to-end:
 
 ui is at **v0.1.2** (the working version). Verified via a clean git install into the
 site: `dist/` has `index.js` + full `.d.ts` tree; site typecheck/build/Playwright all pass.
+But it fails `--frozen-lockfile` on CI (see FINAL above) — superseded by v0.2.0.
+
+</details>
 
 ## Things not to do
 
@@ -169,7 +198,12 @@ site: `dist/` has `index.js` + full `.d.ts` tree; site typecheck/build/Playwrigh
 - [x] Resolved the three build-on-install gotchas (trustedDependencies, CLI flags, tsc dts).
 - [x] Refactored the site to consume `github:TomSawyerLabs/ui#v0.1.2`; added trustedDependencies.
 - [x] Verified clean git install: typecheck + build + Playwright (chromium) all pass.
-- [ ] **Commit/push the SITE changes — NOT yet done; awaiting user go-ahead** (master auto-deploys
-      to Cloudflare Pages). Site working tree has the refactor + the user's RandomQuote footer edit.
-- [ ] Follow-ups: optional CI workflow on the ui repo (typecheck/build/fmt); confirm Cloudflare
-      Pages build runs the prepare build (it should, via trustedDependencies); later: private repo.
+- [x] First site commit (630f978) pushed to master with build-on-install (v0.1.2) →
+      **CI deploy FAILED** (`tsdown: command not found` under `--frozen-lockfile`). master is RED.
+- [x] Reworked to source-shipping (ui v0.2.0); site consumes `github:…#v0.2.0`, adds
+      `ssr.noExternal`, drops `trustedDependencies`. Verified via frozen-lockfile CI simulation.
+- [ ] **Push the source-shipping site fix to master to un-red production** — changes are
+      committed-locally-pending / uncommitted in the working tree; user said "leave red for now"
+      while deciding the approach. Approach now settled + verified → confirm and push.
+- [ ] Follow-ups: optional CI workflow on the ui repo (typecheck + fmt); later: private repo
+      consumes `github:TomSawyerLabs/ui#vX` the same way.
