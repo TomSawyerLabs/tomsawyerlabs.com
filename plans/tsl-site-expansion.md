@@ -98,8 +98,9 @@ counter, Empyrean Gate, the HIL runner and clearance.
 
 ## Open questions for Cameron
 
-1. Does the fence direction work? Anything to change before polishing?
-2. The practice field page needs a booking or contact link and photos.
+1. ~~Fence direction~~: "good start for now" (Cameron, 2026-11-15).
+2. ~~Practice field booking link~~: not applicable. Photos: Cameron will
+   supply them.
 3. claude-usage: the README's "window priming" feature was left out of the
    copy on purpose. Keep it out?
 4. ~~HyparHuts copy thin~~: rewritten from `cinderblock/HyparHut`'s README.
@@ -107,14 +108,16 @@ counter, Empyrean Gate, the HIL runner and clearance.
    telemetry-collector, smtp-bridge, wifi-tester, HotPi, react-smoothie and
    others). Add them? (Separate task, per repo.)
 6. Group pages for the small embedded pieces and Caddy modules?
-7. Cupcake trikes and playa bumper cars (2026-11-15, Cameron: "don't forget
+7. Review notifications: Cameron asked "can we use a webhook?" instead of a
+   watcher session. Proposal sent; awaiting the receiver choice.
+8. Cupcake trikes and playa bumper cars (2026-11-15, Cameron: "don't forget
    HyparHuts, cupcake trikes, playa bumper cars... I'm sure we've got more").
-   Listed under "On the playa" with a "write-up coming" label. Need from
-   Cameron: what they are, what TSL built, photos, any repo or links. Only
+   Listed under "On the playa" with a "write-up coming" label. Asked Chris
+   to elaborate (email reply in thread 1a1de70e7ac09ed5, 2026-11-15). Need: what they are, what TSL built, photos, any repo or links. Only
    found so far: Math Camp's Burning Man applications call the camp "home of
    the fabulous Electric Cupcakes", and a 2014 `cupcakes` photo folder in
    Drive. Nothing on the bumper cars.
-8. More playa/art projects to add? Candidates seen in `P:\Projects`:
+9. More playa/art projects to add? Candidates seen in `P:\Projects`:
    FoldHaus, Burn Bed, Quasar, Skull. (Uprising is client work.)
 
 ## TSL projects (Cameron, 2026-11-15)
