@@ -85,6 +85,13 @@ counter, Empyrean Gate, the HIL runner and clearance.
        repo (GPL-3.0), HyparShade, and stubs for cupcake trikes and bumper cars.
        5a. [ ] **Current:** Cameron reviews the fence and the copy, and supplies
        the cupcake trike and bumper car stories.
+       5b. [x] Review mode ported from the TWILL site (`7474a56`). Review server
+       for Chris: hidden detached `bun run dev --port 5181` in the fence-site
+       worktree (log in `review/server.log`, gitignored). LAN URL
+       `http://10.255.0.77:5181/?reviewer=Chris`. Emailed Chris
+       (chris@tacklind.com) the link and instructions, 2026-11-15
+       (Gmail thread 1a1de70e7ac09ed5). No `review:watch` running yet;
+       comments wait in `review/comments.json` (`bun run review`).
 6. [ ] Group pages (AVR toolkit, Saleae analyzers, Caddy modules), if wanted.
 7. [ ] Real photos and screenshots per project.
 8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes.
