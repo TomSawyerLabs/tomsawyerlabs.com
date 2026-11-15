@@ -31,9 +31,11 @@ counter, Empyrean Gate, the HIL runner and clearance.
   Bay Area FRC teams, Cameron is a Team 8 alum and 2023 SVR Volunteer of the Year.
 - Public TomSawyerLabs repos (2026-11-15): practice-field-management-system,
   empyrean-gate, hil-runner, mcu-hil, clearance, ui, plan-presenter,
-  tomsawyerlabs.com. No public repo for the scheduler or ball counter.
-  `avr-test-hat` (featured on the showcase branch) no longer exists by that
-  name; `mcu-hil` looks like its successor.
+  tomsawyerlabs.com. Correction (2026-11-15): the scheduler and ball counter
+  _are_ public, under `cinderblock/` (`practice-field-scheduler`,
+  `balls-counter`), not the TomSawyerLabs org. Many other candidate TSL
+  projects also live under `cinderblock/` (see "Candidate projects").
+  `avr-test-hat` (featured on the showcase branch) is succeeded by `mcu-hil`.
 
 ## What the showcase branch has
 
@@ -65,6 +67,16 @@ branch edits exactly those files, so every hunk conflicts.
 
 ## Decisions already made (don't re-ask)
 
+- Structure: overview page plus one page per project (Cameron, 2026-11-15).
+- Demos: real screenshots and video; at most one demo, labelled as a
+  simulation (Cameron, 2026-11-15).
+- Scheduler and ball counter: leave them off; "we have other better things to
+  show off" (Cameron, 2026-11-15).
+- Embedded testing: mcu-hil replaces avr-test-hat; may be one bigger
+  "embedded testing" category covering hil-runner, mcu-hil and friends.
+- TSL is about more than FIRST Robotics. The site's framing must cover the
+  wider open-source and public-benefit work, with FIRST as one part.
+
 - Bubble Blade is not public: no name, mechanism or details anywhere.
 - Name a client only when its patent lists Chris or Cameron.
 - No HTML `title=` tooltips.
@@ -75,19 +87,38 @@ branch edits exactly those files, so every hunk conflicts.
 
 1. [x] Survey master, the showcase branch, the TWILL site's TSL copy and the
        org's public repos.
-2. [ ] **Current:** Cameron picks the base and answers the open questions.
-3. [ ] Build per that choice. Not started.
+2. [x] Cameron answered structure, demos, scheduler/ball counter, mcu-hil.
+3. [ ] **Current:** Cameron confirms which projects are TSL (candidate list
+       below) and the base (re-port assumed unless he objects).
+4. [ ] Re-port showcase pieces onto a new branch from master. Not started.
+5. [ ] Overview page plus project pages. Not started.
 
 ## Open questions for Cameron
 
-1. Base: rebase, re-port or fresh? (Recommend re-port.)
-2. Structure: one long scroll page, or overview plus a page per project?
-   (Recommend overview plus pages; seven projects is too many for one scroll.)
-3. Simulated demos: keep them, clearly labelled as simulations, or drop them
-   for real screenshots and video? (Recommend real media, keeping at most one
-   labelled demo.)
-4. Scheduler and ball counter have no public repo. Describe them without a
-   code link, or hold them until they're published?
+1. Base: not explicitly answered. Assuming re-port (the recommendation)
+   unless Cameron objects.
+2. Which projects are TSL? Candidate list below, from public `cinderblock/`
+   and TomSawyerLabs repos. Cameron to strike and add.
+3. Projects under `cinderblock/`: link them there, or move them into the
+   TomSawyerLabs org first? (Recommend: link where they are; moving is a
+   separate decision per repo.)
+
+## Candidate projects (unconfirmed)
+
+- Embedded testing: mcu-hil, hil-runner, BootBob, BenchBob, avrload, AVR,
+  uMaker, usb-dfu, the three Saleae Logic analyzers.
+- EDA and lab tools: electronics-workbench-decoder, multisim2kicad, loupecam,
+  HotPi, cad-preview.
+- Fabrication: FarmSlicer, print-template, HyparHuts.
+- Shop and space: practice field + pFMS, clearance, punchlist, bins.
+- Light and sound: Empyrean Gate, netBeat, awesome LED list.
+- Self-hosting: uptime-tracker, telemetry-collector, smtp-bridge,
+  dns01-issuer, caddy-dns01 / caddy-onlink / caddy-librespeed, wifi-tester,
+  system-resource-manager, actions-spend-pacer.
+- Windows and desktop: ghostcom, plugsight, open-task, open-fan.
+- Libraries: react-smoothie (43 stars), node-deluge-rpc.
+- Probably not TSL (assumed excluded): OpenSlate, svdsa, LibreBooks,
+  LibreHours, jarlid, apitorrent, claude-usage, skills-editor, client work.
 
 ## Findings / gotchas
 
