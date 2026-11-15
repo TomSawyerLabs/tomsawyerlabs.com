@@ -45,3 +45,6 @@ review/uploads/
 
 # Log of the hidden review server, when one is started by hand
 review/server.log
+
+# Where (and with what secret) the review server sends comments
+review/webhook.json

@@ -51,6 +51,12 @@ TWILL site.
   attachments (stored at full resolution in `review/uploads/`, gitignored).
 - Comments live in `review/comments.json` (gitignored). `bun run review`
   prints the open ones as Markdown (`--all` includes resolved).
+- **Webhook:** with `review/webhook.json` (`{"url", "secret"}`, gitignored)
+  the server POSTs every reviewer comment, reply, withdrawal and reopen
+  there, signed with HMAC-SHA256 in `x-review-signature: sha256=<hex>`. Ours
+  points at a T3 Code scheduled task ("On webhook", signature required) that
+  posts each one into a single Claude thread. While it's set, the panel
+  shows that Claude is watching. Claude's own replies aren't sent.
 - `bun run review:watch` streams new comments for a Claude session to act on
   (`--port`, default 5181; see the script's header for `--reply`,
   `--resolve` and `--discuss`).

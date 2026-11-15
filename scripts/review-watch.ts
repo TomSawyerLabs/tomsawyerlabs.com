@@ -67,7 +67,7 @@ const resolveId = value("--resolve");
 if (resolveId) {
   await call(`/comments/${resolveId}`, {
     method: "PATCH",
-    body: JSON.stringify({ resolved: true }),
+    body: JSON.stringify({ author: AGENT, resolved: true }),
   });
   console.log(`resolved ${resolveId}`);
   process.exit(0);

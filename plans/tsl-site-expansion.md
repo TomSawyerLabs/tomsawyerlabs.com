@@ -92,6 +92,16 @@ counter, Empyrean Gate, the HIL runner and clearance.
        (chris@tacklind.com) the link and instructions, 2026-11-15
        (Gmail thread 1a1de70e7ac09ed5). No `review:watch` running yet;
        comments wait in `review/comments.json` (`bun run review`).
+       5c. [x] Review webhook (Cameron: "message to a single claude thread"). The
+       review server POSTs each reviewer event, HMAC-signed, to the T3
+       scheduled task "TSL site review comments"
+       (`scheduled-task:2dcfb9bd-45e0-43b3-869f-53caecddebff`, On webhook,
+       signature required, bound to the TSL site thread, same conversation).
+       URL: local T3 server `http://127.0.0.1:3773/api/hooks/<task>/<token>`
+       (T3 Connect is off, so there's no public URL; the token was read
+       read-only from `~/.t3/userdata/statev2.sqlite`). URL and secret are in
+       `review/webhook.json` (gitignored). Verified: unsigned -> 401, signed
+       test -> 202. If the token is rotated, update webhook.json.
 6. [ ] Group pages (AVR toolkit, Saleae analyzers, Caddy modules), if wanted.
 7. [ ] Real photos and screenshots per project.
 8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes.

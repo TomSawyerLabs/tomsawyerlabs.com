@@ -7,6 +7,13 @@
 // both gitignored. Uploads are stored byte-for-byte: no resizing or
 // recompression, so originals can go straight onto the site. `bun run review`
 // prints the comments as Markdown.
+//
+// Webhook: when review/webhook.json ({"url", "secret"}, gitignored) exists,
+// every reviewer comment, reply, withdrawal and reopen is also POSTed there,
+// signed with HMAC-SHA256 in `x-review-signature: sha256=<hex>`. It points at
+// a T3 scheduled task that posts each one into a single Claude thread, so no
+// watcher has to stay running. Claude's own replies and resolves (author
+// "Claude", from `bun run review:watch --reply/--resolve`) are not sent.
 
 import {
   createReadStream,
@@ -20,6 +27,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { createHmac, randomUUID } from "node:crypto";
 import { basename, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
@@ -74,6 +82,64 @@ export type ReviewComment = ReviewMessage & {
   resolved: boolean;
   replies: ReviewMessage[];
 };
+
+/** The name Claude replies and resolves under (scripts/review-watch.ts). */
+export const AGENT = "Claude";
+
+const WEBHOOK_FILE = fileURLToPath(new URL("./webhook.json", import.meta.url));
+
+type Webhook = { url: string; secret: string };
+
+function readWebhook(): Webhook | undefined {
+  if (!existsSync(WEBHOOK_FILE)) return undefined;
+  const hook = JSON.parse(readFileSync(WEBHOOK_FILE, "utf8")) as Webhook;
+  return hook.url && hook.secret ? hook : undefined;
+}
+
+/** Tell the Claude thread about a reviewer's comment. Never throws. */
+async function notify(
+  event: "added" | "reply" | "withdrawn" | "reopened",
+  comment: ReviewComment,
+  extra: Record<string, unknown>,
+  log: (message: string) => void,
+) {
+  const hook = readWebhook();
+  if (!hook) return;
+  const last = comment.replies.at(-1);
+  const files = (event === "reply" ? last?.attachments : comment.attachments)
+    ?.map((a) => uploadPath(a.url))
+    .join("\n");
+  const payload = JSON.stringify({
+    deliveryId: randomUUID(),
+    event,
+    id: comment.id,
+    kind: comment.kind ?? "comment",
+    path: comment.path,
+    author: event === "reply" ? last?.author : comment.author,
+    quote: comment.quote ?? "",
+    body: event === "reply" ? (last?.body ?? "") : comment.body,
+    original: event === "reply" ? comment.body : "",
+    attachments: files ?? "",
+    anchorText: comment.anchor.text,
+    ...extra,
+  });
+  const signature = createHmac("sha256", hook.secret)
+    .update(payload)
+    .digest("hex");
+  try {
+    const res = await fetch(hook.url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-review-signature": `sha256=${signature}`,
+      },
+      body: payload,
+    });
+    if (!res.ok) log(`[review] webhook answered ${res.status}`);
+  } catch (error) {
+    log(`[review] webhook failed: ${String(error)}`);
+  }
+}
 
 export function readComments(): ReviewComment[] {
   if (!existsSync(COMMENTS_FILE)) return [];
@@ -240,6 +306,7 @@ export function reviewServer(): Plugin {
     name: "tsl-review-server",
     apply: "serve",
     configureServer(server) {
+      const warn = (message: string) => server.config.logger.warn(message);
       // LAN only: refuse everything (pages, assets, the review API) from
       // addresses outside our networks.
       server.middlewares.use((req, res, next) => {
@@ -288,7 +355,9 @@ export function reviewServer(): Plugin {
           watchers.discuss = data.discuss === true;
           return send(res, 200, { ok: true });
         }
-        const live = Date.now() - watchers.lastSeen < WATCHER_TIMEOUT_MS;
+        const live =
+          Date.now() - watchers.lastSeen < WATCHER_TIMEOUT_MS ||
+          readWebhook() !== undefined;
         send(res, 200, { watching: live, discuss: live && watchers.discuss });
       });
 
@@ -344,6 +413,7 @@ export function reviewServer(): Plugin {
                   ? ` (+${comment.attachments.length} file(s))`
                   : ""),
             );
+            void notify("added", comment, {}, warn);
             return send(res, 201, comment);
           }
 
@@ -352,6 +422,7 @@ export function reviewServer(): Plugin {
 
           if (req.method === "PATCH") {
             const data = await json(req);
+            const wasResolved = comment.resolved;
             if (typeof data.resolved === "boolean") {
               comment.resolved = data.resolved;
             }
@@ -366,12 +437,25 @@ export function reviewServer(): Plugin {
               });
             }
             writeComments(comments);
+            const byAgent = clean(data.author, 60) === AGENT;
+            if (!byAgent) {
+              if ((reply || files.length) && !comment.resolved) {
+                void notify("reply", comment, {}, warn);
+              }
+              if (!wasResolved && comment.resolved) {
+                void notify("withdrawn", comment, { how: "resolved" }, warn);
+              }
+              if (wasResolved && !comment.resolved) {
+                void notify("reopened", comment, {}, warn);
+              }
+            }
             return send(res, 200, comment);
           }
 
           if (req.method === "DELETE") {
             // Attachments stay in review/uploads/: pictures are worth keeping.
             writeComments(comments.filter((c) => c !== comment));
+            void notify("withdrawn", comment, { how: "deleted" }, warn);
             return send(res, 200, { ok: true });
           }
 
