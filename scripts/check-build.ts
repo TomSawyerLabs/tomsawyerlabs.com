@@ -3,7 +3,7 @@
 // for unknown paths. Runs after `react-router build`, so a broken build fails
 // before it deploys a site whose every unknown path is a soft 404.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,6 +30,21 @@ if (existsSync(join(client, "404"))) {
 }
 if (page("index.html")?.includes(notFoundRoute)) {
   problems.push("build/client/index.html is the not-found page");
+}
+
+// Review mode is for the dev server only; it must never ship.
+function filesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+    entry.isDirectory()
+      ? filesUnder(join(dir, entry.name))
+      : [join(dir, entry.name)],
+  );
+}
+for (const file of filesUnder(client)) {
+  if (!/\.(html|js|css)$/.test(file)) continue;
+  if (readFileSync(file, "utf8").includes("__review")) {
+    problems.push(`${file} contains review-mode code`);
+  }
 }
 
 if (problems.length) {

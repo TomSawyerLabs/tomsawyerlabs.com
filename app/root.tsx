@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "@fontsource-variable/inter/index.css";
 import "@fontsource-variable/jetbrains-mono/index.css";
@@ -6,6 +6,24 @@ import "@fontsource/permanent-marker/index.css";
 import "./styles/global.css";
 import "./styles/fence.css";
 import "./styles/pages.css";
+
+// Review comments (dev server only). `import.meta.env.DEV` is false in a
+// build, so the overlay and its import are dropped from production bundles.
+const ReviewOverlay = import.meta.env.DEV
+  ? lazy(() => import("./review/ReviewOverlay"))
+  : null;
+
+/** Mounts the review overlay after hydration, so prerendered HTML matches. */
+function Review() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!ReviewOverlay || !mounted) return null;
+  return (
+    <Suspense fallback={null}>
+      <ReviewOverlay />
+    </Suspense>
+  );
+}
 
 const footerQuotes = [
   "Do the math, change the world!",
@@ -88,6 +106,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
         </footer>
+        <Review />
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -36,6 +36,25 @@ bun run build
 Prerenders every page to static HTML in `build/client/`, then checks that
 `404.html` is the not-found page.
 
+## Review mode (dev server only)
+
+`bun run dev` also serves a review overlay, so reviewers on the LAN can pin
+comments to the live pages. It never ships: `import.meta.env.DEV` drops it
+from builds, the API is a dev-only Vite plugin (`review/plugin.ts`), and
+`bun run build` fails if review code reaches `build/client`. Ported from the
+TWILL site.
+
+- Share `http://<this machine's LAN IP>:<port>/?reviewer=Name`; the name is
+  remembered in that browser. Callers from outside our networks are refused.
+- **💬 Review** (bottom left) → **+ Add a comment** → click anything on the
+  page, or select text first. Threads support replies, resolve and
+  attachments (stored at full resolution in `review/uploads/`, gitignored).
+- Comments live in `review/comments.json` (gitignored). `bun run review`
+  prints the open ones as Markdown (`--all` includes resolved).
+- `bun run review:watch` streams new comments for a Claude session to act on
+  (`--port`, default 5181; see the script's header for `--reply`,
+  `--resolve` and `--discuss`).
+
 ## Formatting
 
 [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html), checked on pre-commit
