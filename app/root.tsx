@@ -1,8 +1,11 @@
-import { Footer, GradientBackground } from "@tomsawyerlabs/ui";
 import { useEffect, useState } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
-import "@tomsawyerlabs/ui/styles.css";
-import "./styles/site.css";
+import "@fontsource-variable/inter/index.css";
+import "@fontsource-variable/jetbrains-mono/index.css";
+import "@fontsource/permanent-marker/index.css";
+import "./styles/global.css";
+import "./styles/fence.css";
+import "./styles/pages.css";
 
 const footerQuotes = [
   "Do the math, change the world!",
@@ -15,6 +18,8 @@ const footerQuotes = [
   "More do, less talk.",
 ];
 
+// Server-rendered with the first quote, then a random one after hydration,
+// so the prerendered HTML and the first client render agree.
 function RandomQuote() {
   const [quote, setQuote] = useState(footerQuotes[0]);
   useEffect(() => {
@@ -25,10 +30,21 @@ function RandomQuote() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the head script adds the `js` class first.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="theme-color"
+          content="#8ccbec"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#070d1f"
+          media="(prefers-color-scheme: dark)"
+        />
         <link
           rel="icon"
           href="/favicon-light.ico"
@@ -39,15 +55,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
           href="/favicon-dark.ico"
           media="(prefers-color-scheme: dark)"
         />
+        {/* Before first paint: lets CSS pin and shrink the fence only when
+            JavaScript will be there to drive it. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js')",
+          }}
+        />
+        {import.meta.env.DEV && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `if(new URLSearchParams(location.search).has('light'))document.documentElement.dataset.forceLight=''`,
+            }}
+          />
+        )}
         <Meta />
         <Links />
       </head>
       <body>
-        <GradientBackground />
         {children}
-        <Footer>
-          <RandomQuote />
-        </Footer>
+        <footer className="site-footer">
+          <div className="wrap">
+            <p className="site-footer__quote">
+              <RandomQuote />
+            </p>
+            <nav aria-label="Elsewhere">
+              <a href="https://github.com/TomSawyerLabs">GitHub</a>
+              <a href="https://facebook.com/TomSawyerLabs">Facebook</a>
+              <a href="https://twilltech.com/tomsawyerlabs">
+                Part of TWILL Technology
+              </a>
+            </nav>
+          </div>
+        </footer>
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -5,45 +5,65 @@ test.describe("Home page", () => {
     await page.goto("/");
   });
 
-  test("has title", async ({ page }) => {
+  test("has its title, name and social cards", async ({ page }) => {
     await expect(page).toHaveTitle("Tom Sawyer Labs");
-  });
-
-  test("has heading", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "Home of our Open Source projects" }),
+      page.getByRole("link", { name: "Tom Sawyer Labs, home" }),
     ).toBeVisible();
-  });
-
-  test("has GitHub link", async ({ page }) => {
-    const link = page.getByRole("link", { name: "GitHub" });
-    await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute(
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      "https://github.com/TomSawyerLabs",
+      "https://tomsawyerlabs.com/",
     );
-  });
-
-  test("has Facebook link", async ({ page }) => {
-    const link = page.getByRole("link", { name: "Facebook" });
-    await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute(
-      "href",
-      "https://facebook.com/TomSawyerLabs",
-    );
-  });
-
-  test("has meta description", async ({ page }) => {
-    const description = page.locator('meta[name="description"]');
-    await expect(description).toHaveAttribute(
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
-      "Home of our Open Source projects.",
+      "summary_large_image",
     );
   });
 
-  test("has social links navigation", async ({ page }) => {
+  test("the fence shrinks into the top bar as you scroll", async ({ page }) => {
+    const fence = page.locator("header.fence");
+    const tall = (await fence.boundingBox())!.height;
+    expect(tall).toBeGreaterThan(400);
+
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2));
+    await expect(fence).toHaveAttribute("data-collapsed", "");
+    expect((await fence.boundingBox())!.height).toBeLessThan(100);
+  });
+
+  test("lists projects that link to their pages", async ({ page }) => {
+    await page.getByRole("link", { name: /pFMS/ }).first().click();
+    await expect(page).toHaveURL(/\/pfms$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("pFMS");
+  });
+
+  test("never uses title= tooltips", async ({ page }) => {
+    await expect(page.locator("[title]")).toHaveCount(0);
+  });
+});
+
+test.describe("Without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("the hero is a normal block and the projects still show", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("header.fence")).toHaveCSS(
+      "position",
+      "relative",
+    );
     await expect(
-      page.getByRole("navigation", { name: "Social links" }),
+      page.getByRole("heading", { name: "What we build" }),
     ).toBeVisible();
+  });
+});
+
+test.describe("404 page", () => {
+  test("shows not found with a link home", async ({ page }) => {
+    await page.goto("/nonexistent-page");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("404");
+    await expect(
+      page.getByRole("link", { name: "Go back home" }),
+    ).toHaveAttribute("href", "/");
   });
 });

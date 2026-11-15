@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 630">
+  <!-- The social card (og:image): the fence with our name on it. Edit it,
+       then run `bun run icons`. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8ccbec"/>
+      <stop offset="1" stop-color="#fbefd2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <rect y="230" width="1200" height="26" fill="#6e4a2c"/>
+  <rect y="520" width="1200" height="26" fill="#6e4a2c"/>
+  <path d='M-20 150 L11 118 L42 150 V640 H-20 Z' fill='#f4f1e8'/><path d='M52 150 L83 118 L114 150 V640 H52 Z' fill='#efebe0'/><path d='M124 150 L155 118 L186 150 V640 H124 Z' fill='#f7f4ec'/><path d='M196 150 L227 118 L258 150 V640 H196 Z' fill='#ece8dc'/><path d='M268 150 L299 118 L330 150 V640 H268 Z' fill='#f4f1e8'/><path d='M340 150 L371 118 L402 150 V640 H340 Z' fill='#efebe0'/><path d='M412 150 L443 118 L474 150 V640 H412 Z' fill='#f7f4ec'/><path d='M484 150 L515 118 L546 150 V640 H484 Z' fill='#ece8dc'/><path d='M556 150 L587 118 L618 150 V640 H556 Z' fill='#f4f1e8'/><path d='M628 150 L659 118 L690 150 V640 H628 Z' fill='#efebe0'/><path d='M700 150 L731 118 L762 150 V640 H700 Z' fill='#f7f4ec'/><path d='M772 150 L803 118 L834 150 V640 H772 Z' fill='#ece8dc'/><path d='M844 150 L875 118 L906 150 V640 H844 Z' fill='#f4f1e8'/><path d='M916 150 L947 118 L978 150 V640 H916 Z' fill='#efebe0'/><path d='M988 150 L1019 118 L1050 150 V640 H988 Z' fill='#f7f4ec'/><path d='M1060 150 L1091 118 L1122 150 V640 H1060 Z' fill='#ece8dc'/><path d='M1132 150 L1163 118 L1194 150 V640 H1132 Z' fill='#f4f1e8'/><path d='M1204 150 L1235 118 L1266 150 V640 H1204 Z' fill='#efebe0'/>
+  <image href="../node_modules/@tomsawyerlabs/ui/src/logo.svg" x="330" y="150" width="540" height="411"/>
+</svg>

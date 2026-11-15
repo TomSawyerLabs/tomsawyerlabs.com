@@ -1,0 +1,303 @@
+/* Tom Sawyer's fence: the home page hero that shrinks into the top bar. */
+
+.fence {
+  --bar-h: 76px;
+  --p: 1; /* 0 = full hero, 1 = top bar. Set by Fence.tsx while scrolling. */
+  --picket-w: clamp(44px, 4.6vw, 64px);
+  --picket-gap: clamp(7px, 0.8vw, 11px);
+  --tip: clamp(16px, 1.6vw, 22px);
+  --sky-h: 13svh;
+
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--bar-h);
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 1px 0 var(--rule),
+    0 6px 18px -12px rgb(0 0 0 / 0.5);
+}
+
+.fence[data-hero] {
+  --p: 0;
+  position: relative;
+  height: 100svh;
+}
+
+/* With JS: pin the hero and let it shrink; the spacer keeps the page's
+   content starting below the first screen. */
+.js .fence[data-hero] {
+  position: fixed;
+  inset: 0 0 auto 0;
+}
+.fence-spacer {
+  display: none;
+}
+.js .fence-spacer {
+  display: block;
+  height: 100svh;
+}
+
+.fence__sky {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background:
+    radial-gradient(ellipse 60% 50% at 78% 8%, var(--sun) 0%, transparent 70%),
+    linear-gradient(var(--sky-top), var(--sky-bottom));
+}
+
+/* The two rails behind the pickets, seen through the gaps. */
+.fence__rails {
+  position: absolute;
+  inset: calc(var(--sky-h) * (1 - var(--p)) + var(--tip)) 0 0 0;
+  z-index: -2;
+}
+.fence__rails span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(10px, 7%, 34px);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 37px,
+      rgb(0 0 0 / 0.06) 37px 39px
+    ),
+    var(--wood-dark);
+  box-shadow: 0 3px 4px -2px rgb(0 0 0 / 0.35);
+}
+.fence__rails span:first-child {
+  top: 18%;
+}
+.fence__rails span:last-child {
+  top: 74%;
+}
+
+.fence__pickets {
+  position: absolute;
+  inset: calc(var(--sky-h) * (1 - var(--p))) 0 0 0;
+  z-index: -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--picket-gap);
+  padding-right: calc(var(--picket-gap) / 2);
+}
+
+.picket {
+  /* Wood grain and lime-wash streaks: long, stretched noise, offset per
+     picket so no two boards match. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='2400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.28 0.006' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.09 0 0 0 0 0.03 0 0 0 1.6 -0.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --streaks: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='2400'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.12 0.004' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 0.98 0 0 0 1.5 -0.45'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+  --offset: calc(var(--shade) * 97px) calc(var(--shade) * -1100px);
+  --knots: radial-gradient(
+    ellipse 18% 4% at 40% 63%,
+    rgb(0 0 0 / 0.22),
+    transparent 70%
+  );
+  position: relative;
+  flex: none;
+  width: var(--picket-w);
+  height: calc(100% + 6px);
+  margin-top: var(--lift);
+  clip-path: polygon(0 var(--tip), 50% 0, 100% var(--tip), 100% 100%, 0 100%);
+  background:
+    var(--knots),
+    var(--grain) var(--offset) / 160px 2400px,
+    linear-gradient(
+      90deg,
+      rgb(0 0 0 / 0.12),
+      transparent 18%,
+      transparent 80%,
+      rgb(0 0 0 / 0.18)
+    ),
+    color-mix(in oklab, var(--wood) calc(70% + var(--shade) * 30%), black);
+}
+
+/* Whitewash is lime: translucent and streaky, and the grain shows through. */
+.picket::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(0 0 0 / 0.06),
+      transparent 22%,
+      transparent 78%,
+      rgb(0 0 0 / 0.09)
+    ),
+    var(--streaks) var(--offset) / 160px 2400px,
+    var(--wash);
+  opacity: var(--wash-o, 1);
+}
+.picket[data-paint="bare"]::after {
+  display: none;
+}
+/* Tom stopped partway down this one; the paint ends in a ragged, dripping
+   edge. */
+.picket[data-paint="partial"]::after {
+  bottom: 38%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H60V88C55 92 52 86 47 90 44 92 43 99 40 99 37 99 38 91 33 90 27 89 24 95 18 92 13 89 10 94 6 91 3 89 1 92 0 90Z'/%3E%3C/svg%3E")
+    top / 100% 100% no-repeat;
+}
+
+/* On a phone the whole visible fence is painted, so the logo stays legible. */
+@media (max-width: 700px) {
+  .picket[data-paint]::after {
+    display: block;
+    bottom: 0;
+    mask: none;
+  }
+}
+
+/* The painted name. Laid out at full hero size, centered; Fence.tsx
+   transforms it into the bar's corner as you scroll. Units are svh (not %)
+   so its untransformed box doesn't move as the header shrinks. */
+.fence__brand {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--sky-h) + 34svh);
+  width: min(74vw, 58svh * 1.3125, 760px);
+  translate: -50% -50%;
+  transform-origin: center;
+  color: var(--paint);
+  font-size: inherit;
+  line-height: 0;
+  will-change: transform;
+}
+.fence__brand a {
+  display: block;
+  color: inherit;
+}
+.fence__logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none !important;
+  /* A little paint texture: the edges soak into the wood. */
+  filter: drop-shadow(0 0 0.6px var(--paint));
+  opacity: 0.94;
+}
+
+/* Every page but the home page: the logo just sits in the bar. */
+.fence:not([data-hero]) .fence__brand {
+  left: 1rem;
+  top: 50%;
+  translate: 0 -46%;
+  width: calc((var(--bar-h) - 14px) * 1.3125);
+}
+
+.fence__tagline,
+.fence__more {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  text-align: center;
+  opacity: clamp(0, 1 - var(--p) * 3, 1);
+  pointer-events: none;
+}
+.fence[data-hero]:not([data-collapsed]) .fence__more {
+  pointer-events: auto;
+}
+
+.fence__tagline {
+  /* Just under the logo, however big the logo ends up. */
+  top: calc(
+    var(--sky-h) + 34svh + min(74vw, 58svh * 1.3125, 760px) / 1.3125 / 2 + 2svh
+  );
+  width: min(90vw, 40ch);
+  font-family: var(--font-paint);
+  font-size: clamp(1.25rem, 3.2vw, 2.1rem);
+  line-height: 1.25;
+  color: var(--paint);
+  opacity: calc(clamp(0, 1 - var(--p) * 3, 1) * 0.9);
+}
+
+.fence__more {
+  bottom: 4svh;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paint);
+  text-decoration: none;
+  border-radius: 999px;
+}
+.fence__more svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fence__more svg {
+    animation: nudge 2.4s ease-in-out infinite;
+  }
+}
+@keyframes nudge {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 5px;
+  }
+}
+
+/* Site links, painted on the right-hand pickets. */
+.fence__nav {
+  position: absolute;
+  right: 1rem;
+  top: calc(var(--bar-h) / 2 + 4px);
+  translate: 0 -50%;
+  display: flex;
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+  font-family: var(--font-paint);
+  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+}
+.fence[data-hero]:not([data-collapsed]) .fence__nav {
+  top: calc(var(--bar-h) / 2);
+}
+.fence__nav a {
+  position: relative;
+  padding: 0.2rem 0.45rem;
+  color: var(--paint);
+  text-decoration: none;
+}
+.fence__nav a::before {
+  content: "";
+  position: absolute;
+  inset: 0.1rem -0.1rem;
+  z-index: -1;
+  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
+  background: var(--wash-solid);
+  opacity: 0.85;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.fence__nav a:hover::before,
+.fence__nav a[aria-current="page"]::before {
+  background: var(--accent);
+  transform: rotate(-2deg) scale(1.06);
+}
+.fence__nav a:hover,
+.fence__nav a[aria-current="page"] {
+  color: var(--on-accent);
+}
+
+@media (max-width: 520px) {
+  .fence__nav a:nth-child(2) {
+    display: none;
+  }
+}

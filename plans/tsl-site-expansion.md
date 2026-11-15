@@ -37,33 +37,21 @@ counter, Empyrean Gate, the HIL runner and clearance.
   projects also live under `cinderblock/` (see "Candidate projects").
   `avr-test-hat` (featured on the showcase branch) is succeeded by `mcu-hil`.
 
-## What the showcase branch has
+## Current build
 
-- Hero kept as the first full screen, then scroll-down project sections.
-- Scroll-reveal that is safe without JS (`.js` class set before paint; content
-  visible by default; reduced-motion respected).
-- Project cards with photo slots in `public/projects/` that fall back to a
-  styled placeholder.
-- Two simulated "live demos": a pFMS field radio monitor (random signal
-  jitter) and an AVR test runner (scripted pass/fail).
-- About 1,050 added lines across `home.tsx`, `global.css`, `root.tsx`, tests.
-
-Why it doesn't rebase cleanly: master deleted `global.css`, moved the logo,
-gradient and footer into `@tomsawyerlabs/ui`, and rewrote `root.tsx`. The
-branch edits exactly those files, so every hunk conflicts.
-
-## Options (awaiting Cameron's pick)
-
-1. **Rebase the branch.** Every file conflicts; resolving means rewriting the
-   branch's CSS and root against the ui package anyway. Same work as option 2,
-   with a misleading history. Not recommended.
-2. **Re-port the useful pieces onto a new branch from master** (recommended).
-   Keep the scroll-reveal, the no-JS safety, the card and photo-slot pattern
-   and the section CSS, moved into `site.css` on top of the ui package.
-   Restructure for seven projects: overview page plus `/<project>` pages,
-   like the TWILL site. Roughly a session of work before new content.
-3. **Start fresh from master.** Loses tested no-JS and reveal work for no
-   gain. Not recommended.
+- Branch `fence-site`, worktree
+  `C:\Users\camer\.t3\worktrees\tomsawyerlabs.com\fence-site`, started from
+  master and rebuilt from `ssg-base` (React Router 8, Vite 8, TS 7), like the
+  TWILL site. The June showcase branch is not used.
+- Fence hero: `app/components/Fence.tsx`, `app/styles/fence.css`. Pickets are
+  CSS (clip-path tips, SVG-noise grain and lime-wash streaks); the last two
+  pickets are half-painted and bare. JS pins it and shrinks it into a 76px
+  bar on scroll, moving the logo into the corner; without JS it's a static
+  full-screen block.
+- Theme: whitewashed paper below, Permanent Marker headings, Inter body,
+  hand-drawn card corners, barn-red accent, moonlit night in dark mode.
+- Content: `app/content/projects.ts`, drafted from each repo's README by a
+  subagent. 45 entries, 33 with their own page.
 
 ## Decisions already made (don't re-ask)
 
@@ -72,6 +60,10 @@ branch edits exactly those files, so every hunk conflicts.
   simulation (Cameron, 2026-11-15).
 - Scheduler and ball counter: leave them off; "we have other better things to
   show off" (Cameron, 2026-11-15).
+- Start from scratch like the TWILL site, with a distinct identity: a
+  fence with the name painted on it that shrinks into the top bar on scroll,
+  then projects, then a page per project. Keep the SVG logo (Cameron,
+  2026-11-15).
 - Embedded testing: mcu-hil replaces avr-test-hat; may be one bigger
   "embedded testing" category covering hil-runner, mcu-hil and friends.
 - TSL is about more than FIRST Robotics. The site's framing must cover the
@@ -85,20 +77,27 @@ branch edits exactly those files, so every hunk conflicts.
 
 ## Plan / steps
 
-1. [x] Survey master, the showcase branch, the TWILL site's TSL copy and the
-       org's public repos.
-2. [x] Cameron answered structure, demos, scheduler/ball counter, mcu-hil.
-3. [x] Cameron sorted the project list (below).
-       3a. [ ] **Current:** show Cameron the showcase branch running locally; he
-       then picks the base.
-4. [ ] Re-port showcase pieces onto a new branch from master. Not started.
-5. [ ] Overview page plus project pages. Not started.
+1. [x] Survey master, the June showcase branch, TWILL's TSL copy, the repos.
+2. [x] Cameron's answers: structure, demos, project list, start fresh.
+3. [x] Fence hero and top bar, theme, home page, project template, 404.
+4. [x] Project copy for all 45 entries from READMEs; tests; README.
+5. [ ] **Current:** Cameron reviews the fence and the copy.
+6. [ ] Group pages (AVR toolkit, Saleae analyzers, Caddy modules), if wanted.
+7. [ ] Real photos and screenshots per project.
+8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes.
 
 ## Open questions for Cameron
 
-1. Base: Cameron asked (2026-11-15) what already exists, since live
-   tomsawyerlabs.com is only the logo and footer. Showing him the showcase
-   branch running in a dev server before he picks. Re-port still recommended.
+1. Does the fence direction work? Anything to change before polishing?
+2. The practice field page needs a booking or contact link and photos.
+3. claude-usage: the README's "window priming" feature was left out of the
+   copy on purpose. Keep it out?
+4. HyparHuts: the copy is thin (the README is about its website). Keep it,
+   or write more?
+5. 13 repos have no LICENSE file (hil-runner, mcu-hil, plan-presenter,
+   telemetry-collector, smtp-bridge, wifi-tester, HotPi, react-smoothie and
+   others). Add them? (Separate task, per repo.)
+6. Group pages for the small embedded pieces and Caddy modules?
 
 ## TSL projects (Cameron, 2026-11-15)
 
@@ -133,7 +132,16 @@ Out:
 - Uncommitted edit to `plans/design-system-extraction.md` on master belongs to
   another thread; leave it.
 
+- `bun add`/`bun install` of `github:TomSawyerLabs/ui` fails on this
+  machine with `UNKNOWN_CERTIFICATE_VERIFICATION_ERROR downloading tarball`
+  (also outside the sandbox, in PowerShell, and with NODE_EXTRA_CA_CERTS set
+  to the Windows roots), while curl fetches the same codeload URL fine.
+  Workaround: the ui lock entry was copied from master's bun.lock and the
+  package copied (`cp -rL`) from master's node_modules. CI is unaffected.
+- Preview screenshots sometimes time out once; a retry works.
+
 ## Things not to do
 
-- Don't rebase or delete the showcase branch until Cameron decides.
+- Don't build on the June showcase branch; Cameron chose to start fresh.
+  Leave that branch alone until he says to delete it.
 - Don't present simulated demos as live data.

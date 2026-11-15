@@ -1,8 +1,37 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 build/
+dist/
 .react-router/
+.wrangler/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
 .env
 .env.local
-playwright-report/
+.env.*.local
+
+# Testing
+coverage/
 test-results/
-debug.log
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Misc
+*.tsbuildinfo

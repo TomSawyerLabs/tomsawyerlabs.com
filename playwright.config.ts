@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// PORT lets a run avoid a dev server some other project already has on 5173.
+const port = Number(process.env.PORT ?? 5173);
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
@@ -8,17 +11,26 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: `http://localhost:${port}`,
     trace: "on-first-retry",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
   webServer: {
-    command: "bun run dev",
-    url: "http://localhost:5173",
+    command: `bun run dev --port ${port} --strictPort`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
   },
 });

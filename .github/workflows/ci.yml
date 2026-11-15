@@ -1,5 +1,9 @@
 name: CI
 
+# Deployment is handled by Cloudflare Pages (a git-connected build on push to
+# master; see "Deployment" in the README). This workflow just keeps the code
+# honest.
+
 on:
   push:
     branches:
@@ -16,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -37,3 +41,15 @@ jobs:
 
       - name: Run tests
         run: bun run test --project=chromium
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      # Also checks that build/client/404.html is the not-found page.
+      - name: Build
+        run: bun run build
