@@ -88,22 +88,21 @@ branch edits exactly those files, so every hunk conflicts.
 1. [x] Survey master, the showcase branch, the TWILL site's TSL copy and the
        org's public repos.
 2. [x] Cameron answered structure, demos, scheduler/ball counter, mcu-hil.
-3. [ ] **Current:** Cameron confirms which projects are TSL (candidate list
-       below) and the base (re-port assumed unless he objects).
+3. [x] Cameron sorted the project list (below).
+       3a. [ ] **Current:** show Cameron the showcase branch running locally; he
+       then picks the base.
 4. [ ] Re-port showcase pieces onto a new branch from master. Not started.
 5. [ ] Overview page plus project pages. Not started.
 
 ## Open questions for Cameron
 
-1. Base: not explicitly answered. Assuming re-port (the recommendation)
-   unless Cameron objects.
-2. Which projects are TSL? Candidate list below, from public `cinderblock/`
-   and TomSawyerLabs repos. Cameron to strike and add.
-3. Projects under `cinderblock/`: link them there, or move them into the
-   TomSawyerLabs org first? (Recommend: link where they are; moving is a
-   separate decision per repo.)
+1. Base: Cameron asked (2026-11-15) what already exists, since live
+   tomsawyerlabs.com is only the logo and footer. Showing him the showcase
+   branch running in a dev server before he picks. Re-port still recommended.
 
-## Candidate projects (unconfirmed)
+## TSL projects (Cameron, 2026-11-15)
+
+In:
 
 - Embedded testing: mcu-hil, hil-runner, BootBob, BenchBob, avrload, AVR,
   uMaker, usb-dfu, the three Saleae Logic analyzers.
@@ -111,14 +110,22 @@ branch edits exactly those files, so every hunk conflicts.
   HotPi, cad-preview.
 - Fabrication: FarmSlicer, print-template, HyparHuts.
 - Shop and space: practice field + pFMS, clearance, punchlist, bins.
-- Light and sound: Empyrean Gate, netBeat, awesome LED list.
 - Self-hosting: uptime-tracker, telemetry-collector, smtp-bridge,
   dns01-issuer, caddy-dns01 / caddy-onlink / caddy-librespeed, wifi-tester,
   system-resource-manager, actions-spend-pacer.
 - Windows and desktop: ghostcom, plugsight, open-task, open-fan.
-- Libraries: react-smoothie (43 stars), node-deluge-rpc.
-- Probably not TSL (assumed excluded): OpenSlate, svdsa, LibreBooks,
-  LibreHours, jarlid, apitorrent, claude-usage, skills-editor, client work.
+- Libraries: react-smoothie, node-deluge-rpc.
+- Also TSL: LibreBooks, LibreHours, claude-usage, skills-editor.
+- Already in the TSL org: plan-presenter (not yet discussed).
+
+Out:
+
+- Light and sound (Empyrean Gate, netBeat, awesome LED list): "more Cameron
+  personal, at least for now". This overrides the original brief, which
+  listed Empyrean Gate.
+- Personal: OpenSlate, svdsa, jarlid, apitorrent.
+- Client work: those are usually TWILL clients, not TSL.
+- Repos under `cinderblock/`: link them where they are, for now.
 
 ## Findings / gotchas
 
