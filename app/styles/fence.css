@@ -181,6 +181,18 @@
   opacity: 0.94;
 }
 
+/* In the bar the logo straddles the gaps between pickets, where dark paint
+   would vanish against a night sky; a whitewash halo keeps it whole. The
+   hero logo is scaled down ~8x by then, hence the large blur. */
+.fence[data-hero] .fence__logo svg {
+  filter: drop-shadow(0 0 calc(var(--p) * 16px) var(--wash-solid))
+    drop-shadow(0 0 calc(var(--p) * 10px) var(--wash-solid));
+}
+.fence:not([data-hero]) .fence__logo svg {
+  filter: drop-shadow(0 0 2px var(--wash-solid))
+    drop-shadow(0 0 1.5px var(--wash-solid));
+}
+
 /* Every page but the home page: the logo just sits in the bar. */
 .fence:not([data-hero]) .fence__brand {
   left: 1rem;

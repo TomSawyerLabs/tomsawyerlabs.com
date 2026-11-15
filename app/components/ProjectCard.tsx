@@ -7,6 +7,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <h4 className="card__name">
         {project.name}
         {project.early && <span className="badge">early</span>}
+        {project.stub && <span className="badge">write-up coming</span>}
       </h4>
       <p className="card__tagline">{project.tagline}</p>
       {project.repo && <p className="card__repo mono">{project.repo}</p>}

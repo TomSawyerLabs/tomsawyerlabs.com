@@ -10,6 +10,7 @@ export type CategoryId =
   | "testing"
   | "lab"
   | "fab"
+  | "playa"
   | "selfhost"
   | "devtools"
   | "desktop"
@@ -46,6 +47,12 @@ export const CATEGORIES: Category[] = [
     id: "fab",
     name: "Fabrication",
     blurb: "Printing, cutting and building things.",
+  },
+  {
+    id: "playa",
+    name: "On the playa",
+    blurb:
+      "Built for Black Rock City and the dust: shelters, and things to ride.",
   },
   {
     id: "selfhost",
@@ -97,6 +104,8 @@ export type Project = {
   links: Link[];
   /** Gets its own page at /<slug>. Small pieces are listed only. */
   page: boolean;
+  /** Listed with a "write-up coming" label until we have its story. */
+  stub?: boolean;
   /** The README says it's early: shown as a label. */
   early?: boolean;
   /** Shown larger on the home page. */
@@ -761,30 +770,74 @@ export const PROJECTS: Project[] = [
   {
     slug: "hyparhuts",
     name: "HyparHuts",
-    category: "fab",
-    repo: "cinderblock/hyparhuts.org",
+    category: "playa",
+    repo: "cinderblock/HyparHut",
     tagline:
-      "Temporary panel shelters descended from the hexayurt, with the tape taken out",
+      "Foam-panel shelters that fold flat and set up in under five minutes. No tape.",
     summary:
-      "HyparHuts are temporary panel shelters descended from the hexayurt, designed to go together without tape. This repo is the project's website; the design files and original write-up live in a separate repo.",
+      "HyparHuts are temporary shelters descended from the hexayurt, built from rigid insulation foam with the tape taken out. Every panel is wrapped in house wrap and hinged with glued fabric strips, so the whole hut unfolds like an accordion and lasts for years. The first one went to the playa four years running.",
     features: [
-      "Website telling the HyparHut story in seven chapters",
-      "Includes a 2014 build timelapse",
-      "Design files in cinderblock/HyparHut",
+      "Sets up in under five minutes and folds flat to store and haul",
+      "Panels wrapped in house wrap, hinged with fabric strips kept in shear",
+      "Wooden trim under the wrap protects every edge in transport",
+      "Stake a separate frame first; the hut drops onto it and locks in",
+      "A fitted roof tarp with bungees: waterproof, and no guy lines to trip on",
+      "The twisted roof approximates a hyperbolic paraboloid, which keeps it rigid in wind",
     ],
-    stack: ["TypeScript", "React Router", "Cloudflare Workers (planned)"],
+    stack: ["Rigid foam board", "House wrap", "Contact cement", "SolidWorks"],
+    license: "GPL-3.0",
     links: [
       {
-        label: "Source on GitHub",
-        href: "https://github.com/cinderblock/hyparhuts.org",
+        label: "Design and write-up on GitHub",
+        href: "https://github.com/cinderblock/HyparHut",
       },
       {
-        label: "Design files",
-        href: "https://github.com/cinderblock/HyparHut",
+        label: "Website source",
+        href: "https://github.com/cinderblock/hyparhuts.org",
       },
     ],
     page: true,
-    early: true,
+  },
+  {
+    slug: "hyparshade",
+    name: "HyparShade",
+    category: "playa",
+    repo: "cinderblock/HyparShade",
+    tagline: "A quick temporary shading system",
+    summary: "A quick temporary shading system.",
+    features: [],
+    stack: [],
+    links: [
+      {
+        label: "Source on GitHub",
+        href: "https://github.com/cinderblock/HyparShade",
+      },
+    ],
+    page: false,
+  },
+  {
+    slug: "cupcake-trikes",
+    name: "Cupcake trikes",
+    category: "playa",
+    tagline: "Electric cupcakes you can ride, from Math Camp on the playa",
+    summary: "",
+    features: [],
+    stack: [],
+    links: [],
+    page: false,
+    stub: true,
+  },
+  {
+    slug: "playa-bumper-cars",
+    name: "Playa bumper cars",
+    category: "playa",
+    tagline: "Bumper cars for Black Rock City",
+    summary: "",
+    features: [],
+    stack: [],
+    links: [],
+    page: false,
+    stub: true,
   },
   {
     slug: "uptime-tracker",

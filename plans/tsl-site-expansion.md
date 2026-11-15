@@ -81,7 +81,10 @@ counter, Empyrean Gate, the HIL runner and clearance.
 2. [x] Cameron's answers: structure, demos, project list, start fresh.
 3. [x] Fence hero and top bar, theme, home page, project template, 404.
 4. [x] Project copy for all 45 entries from READMEs; tests; README.
-5. [ ] **Current:** Cameron reviews the fence and the copy.
+5. [x] "On the playa" category: HyparHuts rewritten from the HyparHut design
+       repo (GPL-3.0), HyparShade, and stubs for cupcake trikes and bumper cars.
+       5a. [ ] **Current:** Cameron reviews the fence and the copy, and supplies
+       the cupcake trike and bumper car stories.
 6. [ ] Group pages (AVR toolkit, Saleae analyzers, Caddy modules), if wanted.
 7. [ ] Real photos and screenshots per project.
 8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes.
@@ -92,12 +95,20 @@ counter, Empyrean Gate, the HIL runner and clearance.
 2. The practice field page needs a booking or contact link and photos.
 3. claude-usage: the README's "window priming" feature was left out of the
    copy on purpose. Keep it out?
-4. HyparHuts: the copy is thin (the README is about its website). Keep it,
-   or write more?
+4. ~~HyparHuts copy thin~~: rewritten from `cinderblock/HyparHut`'s README.
 5. 13 repos have no LICENSE file (hil-runner, mcu-hil, plan-presenter,
    telemetry-collector, smtp-bridge, wifi-tester, HotPi, react-smoothie and
    others). Add them? (Separate task, per repo.)
 6. Group pages for the small embedded pieces and Caddy modules?
+7. Cupcake trikes and playa bumper cars (2026-11-15, Cameron: "don't forget
+   HyparHuts, cupcake trikes, playa bumper cars... I'm sure we've got more").
+   Listed under "On the playa" with a "write-up coming" label. Need from
+   Cameron: what they are, what TSL built, photos, any repo or links. Only
+   found so far: Math Camp's Burning Man applications call the camp "home of
+   the fabulous Electric Cupcakes", and a 2014 `cupcakes` photo folder in
+   Drive. Nothing on the bumper cars.
+8. More playa/art projects to add? Candidates seen in `P:\Projects`:
+   FoldHaus, Burn Bed, Quasar, Skull. (Uprising is client work.)
 
 ## TSL projects (Cameron, 2026-11-15)
 
