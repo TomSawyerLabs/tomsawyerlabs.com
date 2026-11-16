@@ -118,8 +118,8 @@ counter, Empyrean Gate, the HIL runner and clearance.
    telemetry-collector, smtp-bridge, wifi-tester, HotPi, react-smoothie and
    others). Add them? (Separate task, per repo.)
 6. Group pages for the small embedded pieces and Caddy modules?
-7. Review notifications: Cameron asked "can we use a webhook?" instead of a
-   watcher session. Proposal sent; awaiting the receiver choice.
+7. ~~Review notifications~~: webhook into this Claude thread, live and
+   tested (2026-11-15).
 8. Cupcake trikes and playa bumper cars (2026-11-15, Cameron: "don't forget
    HyparHuts, cupcake trikes, playa bumper cars... I'm sure we've got more").
    Listed under "On the playa" with a "write-up coming" label. Asked Chris
