@@ -111,8 +111,8 @@ counter, Empyrean Gate, the HIL runner and clearance.
 1. ~~Fence direction~~: "good start for now" (Cameron, 2026-11-15).
 2. ~~Practice field booking link~~: not applicable. Photos: Cameron will
    supply them.
-3. claude-usage: the README's "window priming" feature was left out of the
-   copy on purpose. Keep it out?
+3. ~~claude-usage window priming~~: keep it and scheduled messages off
+   the site (Cameron, 2026-11-15).
 4. ~~HyparHuts copy thin~~: rewritten from `cinderblock/HyparHut`'s README.
 5. 13 repos have no LICENSE file (hil-runner, mcu-hil, plan-presenter,
    telemetry-collector, smtp-bridge, wifi-tester, HotPi, react-smoothie and
