@@ -104,7 +104,8 @@ counter, Empyrean Gate, the HIL runner and clearance.
        test -> 202. If the token is rotated, update webhook.json.
 6. [ ] Group pages (AVR toolkit, Saleae analyzers, Caddy modules), if wanted.
 7. [ ] Real photos and screenshots per project.
-8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes.
+8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes,
+       and not before the photos are in (Cameron, 2026-11-15).
 
 ## Open questions for Cameron
 
