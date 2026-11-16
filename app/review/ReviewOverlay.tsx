@@ -3,6 +3,10 @@
 // build.
 //
 // Reviewers open the site with ?reviewer=Name once; the name is remembered.
+//
+// Nothing a reviewer writes is lost if the server is down: changes go
+// through the outbox (./outbox.ts) and send when it's back, and half-written
+// text survives the page reload Vite does when the server restarts.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
@@ -10,12 +14,18 @@ import type {
   ReviewAnchor,
   ReviewAttachment,
   ReviewComment,
+  ReviewMessage,
 } from "../../review/plugin";
+import * as outbox from "./outbox";
+import type { OutboxItem, PendingFile } from "./outbox";
 
 const API = "/__review/comments";
 const UPLOADS = "/__review/uploads";
 const WATCHER = "/__review/watcher";
 const NAME_KEY = "tsl-review-name";
+const DRAFT_KEY = "tsl-review-draft";
+const DRAFT_TEXT_KEY = "tsl-review-draft-text";
+const REPLY_KEY = "tsl-review-reply:";
 const POLL_MS = 5000;
 
 function storedName(): string {
@@ -32,6 +42,44 @@ function storeName(name: string) {
     // Private mode: the name just won't be remembered.
   }
 }
+
+/** Half-written text, kept for this tab across reloads. */
+function readSession<T>(key: string): T | null {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+function writeSession(key: string, value: unknown) {
+  try {
+    if (value === null) sessionStorage.removeItem(key);
+    else sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage blocked: the text just won't survive a reload.
+  }
+}
+
+/** A text field's value, kept in sessionStorage under `key`. */
+function useSavedText(key: string) {
+  const [text, setText] = useState(() => readSession<string>(key) ?? "");
+  return [
+    text,
+    (value: string) => {
+      setText(value);
+      writeSession(key, value || null);
+    },
+  ] as const;
+}
+
+type Draft = { anchor: ReviewAnchor; at: Point; quote?: string };
+type SavedDraft = Draft & { path: string };
+/** A reply still in the outbox carries the names of files not yet sent. */
+type ShownMessage = ReviewMessage & { waiting?: string[] };
+type ShownComment = Omit<ReviewComment, "replies"> & {
+  replies: ShownMessage[];
+};
 
 /** A selector for `el`: the nearest id-bearing ancestor, then nth-of-type. */
 function selectorFor(el: Element): string {
@@ -79,7 +127,7 @@ function resolve(anchor: ReviewAnchor): Element | null {
 
 type Point = { x: number; y: number };
 
-function pinPoint(c: ReviewComment): Point | null {
+function pinPoint(c: { anchor: ReviewAnchor }): Point | null {
   const el = resolve(c.anchor);
   if (!el) return null;
   const r = el.getBoundingClientRect();
@@ -88,6 +136,18 @@ function pinPoint(c: ReviewComment): Point | null {
     x: r.left + window.scrollX + r.width * c.anchor.fx,
     y: r.top + window.scrollY + r.height * c.anchor.fy,
   };
+}
+
+/** What an outbox item will do, in a few words. */
+function describe(item: OutboxItem): string {
+  const b = item.body;
+  const text = (b.body ?? b.reply ?? "").slice(0, 70);
+  const files = item.files.length + (b.attachments?.length ?? 0);
+  const plus = files ? ` (+${files} file${files > 1 ? "s" : ""})` : "";
+  if (item.method === "DELETE") return "Delete a comment";
+  if (item.method === "POST") return `Comment: ${text}${plus}`;
+  if (b.reply || files) return `Reply: ${text}${plus}`;
+  return b.resolved ? "Resolve a comment" : "Reopen a comment";
 }
 
 function when(iso: string) {
@@ -106,11 +166,14 @@ export default function ReviewOverlay() {
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [panel, setPanel] = useState(false);
   const [picking, setPicking] = useState(false);
-  const [draft, setDraft] = useState<{
-    anchor: ReviewAnchor;
-    at: Point;
-    quote?: string;
-  } | null>(null);
+  const [draft, setDraftState] = useState<Draft | null>(null);
+  function setDraft(next: Draft | null) {
+    setDraftState(next);
+    writeSession(DRAFT_KEY, next && { ...next, path: pathname });
+  }
+  // Waiting to send, and whether the last try reached the server.
+  const [pending, setPending] = useState<OutboxItem[]>([]);
+  const [reachable, setReachable] = useState(true);
   // Selected text on the page: offer to comment on exactly that.
   const [selection, setSelection] = useState<{
     anchor: ReviewAnchor;
@@ -181,15 +244,49 @@ export default function ReviewOverlay() {
   }, []);
 
   const load = useCallback(async () => {
-    const res = await fetch(`${API}?path=${encodeURIComponent(pathname)}`);
-    if (res.ok) setComments(await res.json());
+    try {
+      const res = await fetch(`${API}?path=${encodeURIComponent(pathname)}`);
+      if (res.ok) setComments(await res.json());
+      setReachable(res.status < 500);
+    } catch {
+      setReachable(false);
+    }
   }, [pathname]);
 
-  useEffect(() => {
-    load();
-    const timer = setInterval(load, POLL_MS);
-    return () => clearInterval(timer);
+  /** Send what's waiting, then show the server's copy. */
+  const sync = useCallback(async () => {
+    const waiting = await outbox.list();
+    if (waiting.some((i) => !i.error)) {
+      setReachable(await outbox.flush(API, UPLOADS));
+    }
+    setPending(await outbox.list());
+    await load();
   }, [load]);
+
+  useEffect(() => {
+    sync();
+    const timer = setInterval(sync, POLL_MS);
+    window.addEventListener("online", sync);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("online", sync);
+    };
+  }, [sync]);
+
+  // A comment being written when the page reloaded (Vite reloads it when
+  // the dev server comes back): open it again.
+  useEffect(() => {
+    const saved = readSession<SavedDraft>(DRAFT_KEY);
+    if (saved && saved.path === pathname) {
+      setDraftState({ anchor: saved.anchor, at: saved.at, quote: saved.quote });
+    }
+  }, [pathname]);
+
+  async function enqueue(item: OutboxItem) {
+    await outbox.put(item);
+    setPending(await outbox.list());
+    void sync();
+  }
 
   // Re-place pins when the layout moves.
   useEffect(() => {
@@ -281,15 +378,16 @@ export default function ReviewOverlay() {
     text: string,
     author: string,
     files: ReviewAttachment[],
+    waiting: PendingFile[],
     kind: "comment" | "discuss" = "comment",
   ) {
     if (!draft) return;
     storeName(author);
     setName(author);
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const item = outbox.newItem(
+      pathname,
+      "POST",
+      {
         path: pathname,
         anchor: draft.anchor,
         quote: draft.quote,
@@ -297,29 +395,72 @@ export default function ReviewOverlay() {
         author,
         body: text,
         attachments: files,
-      }),
-    });
+      },
+      waiting,
+    );
     setDraft(null);
-    load();
+    writeSession(DRAFT_TEXT_KEY, null);
+    await enqueue(item);
   }
 
-  async function patch(id: string, data: object) {
-    await fetch(`${API}/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ author: name, ...data }),
-    });
-    load();
+  async function patch(
+    id: string,
+    data: OutboxItem["body"],
+    waiting: PendingFile[] = [],
+  ) {
+    await enqueue(
+      outbox.newItem(pathname, "PATCH", { author: name, ...data }, waiting, id),
+    );
   }
 
   async function remove(id: string) {
-    await fetch(`${API}/${id}`, { method: "DELETE" });
     setOpen(null);
-    load();
+    await enqueue(outbox.newItem(pathname, "DELETE", {}, [], id));
   }
 
-  const visible = comments.filter((c) => showResolved || !c.resolved);
-  const unresolved = comments.filter((c) => !c.resolved).length;
+  async function discard(key: string) {
+    await outbox.remove(key);
+    setPending(await outbox.list());
+  }
+
+  // The server's comments with what's still waiting already applied.
+  const here = pending.filter((i) => i.path === pathname && !i.error);
+  const shown: ShownComment[] = comments
+    .filter(
+      (c) => !here.some((i) => i.method === "DELETE" && i.target === c.id),
+    )
+    .map((c) => {
+      const mine = here.filter(
+        (i) => i.method === "PATCH" && i.target === c.id,
+      );
+      if (!mine.length) return c;
+      const resolved = [...mine]
+        .reverse()
+        .find((i) => typeof i.body.resolved === "boolean")?.body.resolved;
+      return {
+        ...c,
+        resolved: resolved ?? c.resolved,
+        replies: [
+          ...c.replies,
+          ...mine
+            .filter(
+              (i) =>
+                i.body.reply || i.files.length || i.body.attachments?.length,
+            )
+            .map((i) => ({
+              author: i.body.author ?? name,
+              body: i.body.reply ?? "",
+              createdAt: i.createdAt,
+              attachments: i.body.attachments ?? [],
+              waiting: i.files.map((f) => f.name),
+            })),
+        ],
+      };
+    });
+  const newOnes = here.filter((i) => i.method === "POST" && i.body.anchor);
+  const visible = shown.filter((c) => showResolved || !c.resolved);
+  const unresolved = shown.filter((c) => !c.resolved).length + newOnes.length;
+  const failed = pending.filter((i) => i.error);
 
   return (
     <>
@@ -346,14 +487,28 @@ export default function ReviewOverlay() {
                   comment={c}
                   at={at}
                   onClose={() => setOpen(null)}
-                  onReply={(reply, files) =>
-                    patch(c.id, { reply, attachments: files })
+                  onReply={(reply, files, waiting) =>
+                    patch(c.id, { reply, attachments: files }, waiting)
                   }
                   onResolve={() => patch(c.id, { resolved: !c.resolved })}
                   onDelete={() => remove(c.id)}
                 />
               )}
             </div>
+          );
+        })}
+        {newOnes.map((item) => {
+          const at = pinPoint({ anchor: item.body.anchor! });
+          if (!at) return null;
+          return (
+            <span
+              key={item.key}
+              className="rv-pin waiting"
+              style={{ left: at.x, top: at.y }}
+              aria-label="Comment waiting to send"
+            >
+              ⏳
+            </span>
           );
         })}
         {selection && !draft && (
@@ -377,7 +532,10 @@ export default function ReviewOverlay() {
             at={draft.at}
             quote={draft.quote}
             name={name}
-            onCancel={() => setDraft(null)}
+            onCancel={() => {
+              setDraft(null);
+              writeSession(DRAFT_TEXT_KEY, null);
+            }}
             onSave={save}
             canDiscuss={watcher.discuss}
           />
@@ -398,6 +556,41 @@ export default function ReviewOverlay() {
                   : "● Claude is watching: comments get worked on."
                 : "○ No Claude session is watching right now; comments wait here."}
             </p>
+            {!reachable && (
+              <p className="rv-offline" role="status">
+                ⚠ Can't reach the review server right now.
+                {pending.length > 0 &&
+                  " What you write is saved in this browser and sends when it's back."}
+              </p>
+            )}
+            {pending.length > 0 && (
+              <div className="rv-outbox">
+                <strong>Waiting to send</strong>
+                <ul>
+                  {pending.map((item) => (
+                    <li key={item.key}>
+                      <span>
+                        {item.error ? "✕" : "⏳"} {describe(item)}
+                        {item.path !== pathname && ` (on ${item.path})`}
+                      </span>
+                      {item.error && (
+                        <>
+                          <span className="rv-error">
+                            The server refused it: {item.error}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => discard(item.key)}
+                          >
+                            Discard
+                          </button>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <button
               type="button"
               className="rv-primary"
@@ -456,6 +649,7 @@ export default function ReviewOverlay() {
         >
           💬 <span className="rv-toggle-label">Review</span>
           {unresolved ? ` · ${unresolved}` : ""}
+          {failed.length > 0 ? " · ✕" : pending.length > 0 ? " · ⏳" : ""}
         </button>
       </div>
     </>
@@ -465,6 +659,8 @@ export default function ReviewOverlay() {
 /** Upload files as-is (full resolution) and track their progress. */
 function useUploads() {
   const [files, setFiles] = useState<ReviewAttachment[]>([]);
+  // Picked while the server was unreachable: sent with the comment later.
+  const [waiting, setWaiting] = useState<PendingFile[]>([]);
   const [busy, setBusy] = useState<{ id: number; name: string; pct: number }[]>(
     [],
   );
@@ -494,6 +690,11 @@ function useUploads() {
         setBusy((b) => b.filter((x) => x.id !== id));
         if (xhr.status === 201) {
           setFiles((f) => [...f, JSON.parse(xhr.responseText)]);
+        } else if (xhr.status === 0 || xhr.status >= 500) {
+          setWaiting((w) => [
+            ...w,
+            { name: file.name, type: file.type, blob: file },
+          ]);
         } else {
           setError(`Couldn't upload ${file.name}`);
         }
@@ -504,9 +705,11 @@ function useUploads() {
 
   return {
     files,
+    waiting,
     busy: busy.length > 0,
     reset: () => {
       setFiles([]);
+      setWaiting([]);
       setError("");
     },
     remove: (url: string) => setFiles((f) => f.filter((x) => x.url !== url)),
@@ -543,6 +746,19 @@ function useUploads() {
         {busy.map((b) => (
           <div key={b.id} className="rv-progress">
             Uploading {b.name}… {b.pct}%
+          </div>
+        ))}
+        {waiting.map((w, i) => (
+          <div key={i} className="rv-progress">
+            📎 {w.name}: the server isn't answering, so this uploads when it's
+            back.{" "}
+            <button
+              type="button"
+              className="rv-link"
+              onClick={() => setWaiting((all) => all.filter((x) => x !== w))}
+            >
+              Remove
+            </button>
           </div>
         ))}
         {error && <div className="rv-error">{error}</div>}
@@ -609,14 +825,16 @@ function Draft({
     text: string,
     author: string,
     files: ReviewAttachment[],
+    waiting: PendingFile[],
     kind?: "comment" | "discuss",
   ) => void;
   /** A Claude session that can start conversations is watching. */
   canDiscuss?: boolean;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useSavedText(DRAFT_TEXT_KEY);
   const [author, setAuthor] = useState(name);
   const uploads = useUploads();
+  const hasFiles = uploads.files.length + uploads.waiting.length > 0;
   return (
     <form
       className="rv-card"
@@ -624,12 +842,8 @@ function Draft({
       {...uploads.target}
       onSubmit={(e) => {
         e.preventDefault();
-        if (
-          (text.trim() || uploads.files.length) &&
-          author.trim() &&
-          !uploads.busy
-        )
-          onSave(text, author.trim(), uploads.files);
+        if ((text.trim() || hasFiles) && author.trim() && !uploads.busy)
+          onSave(text, author.trim(), uploads.files, uploads.waiting);
       }}
     >
       {quote && <blockquote className="rv-quote">{quote}</blockquote>}
@@ -666,7 +880,13 @@ function Draft({
             type="button"
             disabled={uploads.busy || !author.trim() || !(text.trim() || quote)}
             onClick={() =>
-              onSave(text, author.trim(), uploads.files, "discuss")
+              onSave(
+                text,
+                author.trim(),
+                uploads.files,
+                uploads.waiting,
+                "discuss",
+              )
             }
           >
             🧵 Discuss
@@ -694,15 +914,20 @@ function Thread({
   onResolve,
   onDelete,
 }: {
-  comment: ReviewComment;
+  comment: ShownComment;
   at: Point;
   onClose: () => void;
-  onReply: (text: string, files: ReviewAttachment[]) => void;
+  onReply: (
+    text: string,
+    files: ReviewAttachment[],
+    waiting: PendingFile[],
+  ) => void;
   onResolve: () => void;
   onDelete: () => void;
 }) {
-  const [reply, setReply] = useState("");
+  const [reply, setReply] = useSavedText(REPLY_KEY + comment.id);
   const uploads = useUploads();
+  const hasFiles = uploads.files.length + uploads.waiting.length > 0;
   return (
     <div className="rv-card" style={{ left: at.x, top: at.y }}>
       <button type="button" className="rv-close" onClick={onClose}>
@@ -717,21 +942,27 @@ function Thread({
       {comment.quote && (
         <blockquote className="rv-quote">{comment.quote}</blockquote>
       )}
-      {[comment, ...comment.replies].map((m, i) => (
+      {[comment as ShownMessage, ...comment.replies].map((m, i) => (
         <div key={i} className="rv-msg">
           <div className="rv-meta">
             <b>{m.author}</b> · {when(m.createdAt)}
+            {m.waiting && " · ⏳ not sent yet"}
           </div>
           {m.body && <p>{m.body}</p>}
           <Attachments files={m.attachments ?? []} />
+          {m.waiting?.map((f) => (
+            <div key={f} className="rv-progress">
+              📎 {f} (uploads when the server is back)
+            </div>
+          ))}
         </div>
       ))}
       <form
         {...uploads.target}
         onSubmit={(e) => {
           e.preventDefault();
-          if ((reply.trim() || uploads.files.length) && !uploads.busy) {
-            onReply(reply, uploads.files);
+          if ((reply.trim() || hasFiles) && !uploads.busy) {
+            onReply(reply, uploads.files, uploads.waiting);
             setReply("");
             uploads.reset();
           }
@@ -808,6 +1039,17 @@ const STYLES = `
   color: #fff; font: 700 12px/1 var(--font-sans); cursor: pointer;
   box-shadow: 0 4px 14px rgba(0,0,0,.35); }
 .rv-pin.resolved { background: #6b7182; opacity: .7; }
+.rv-pin.waiting { display: grid; place-items: center; background: var(--card);
+  border: 2px dashed #f08a4b; cursor: default; font-size: 12px; }
+.rv-offline { margin: 0; padding: 6px 8px; border-radius: 8px; font-size: 12px;
+  background: color-mix(in oklab, #e5484d 14%, var(--card)); }
+.rv-outbox { display: grid; gap: 4px; font-size: 12px; }
+.rv-outbox ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rv-outbox li { display: grid; gap: 2px; color: var(--ink-muted); }
+.rv-outbox li button { justify-self: start; padding: 2px 8px; border-radius: 6px;
+  border: 1px solid var(--ink-muted); background: none; color: var(--ink); }
+.rv-link { background: none; border: 0; padding: 0; color: inherit;
+  text-decoration: underline; cursor: pointer; font: inherit; }
 .rv-card { position: absolute; translate: 14px 14px; width: min(320px, 80vw);
   background: var(--card); color: var(--ink); border: 1px solid var(--ink-muted);
   border-radius: 12px; padding: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.35);

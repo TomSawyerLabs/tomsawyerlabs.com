@@ -28,14 +28,21 @@ import {
 } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createHmac, randomUUID } from "node:crypto";
-import { basename, extname, join } from "node:path";
+import { basename, extname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 
-export const COMMENTS_FILE = fileURLToPath(
-  new URL("./comments.json", import.meta.url),
-);
-export const UPLOADS_DIR = fileURLToPath(new URL("./uploads", import.meta.url));
+/**
+ * Where comments, uploads and the webhook config live: review/, or
+ * REVIEW_DIR (the tests point it at a scratch folder, so they never touch
+ * real comments or call the webhook).
+ */
+const DIR = process.env.REVIEW_DIR
+  ? resolvePath(process.env.REVIEW_DIR)
+  : fileURLToPath(new URL(".", import.meta.url));
+
+export const COMMENTS_FILE = join(DIR, "comments.json");
+export const UPLOADS_DIR = join(DIR, "uploads");
 
 /** Largest single upload: big enough for raw camera files and PDFs. */
 const MAX_UPLOAD = 200 * 1024 * 1024;
@@ -64,6 +71,11 @@ export type ReviewMessage = {
   body: string;
   createdAt: string;
   attachments: ReviewAttachment[];
+  /**
+   * The browser's outbox key (app/review/outbox.ts). A repeat of a request
+   * that already landed carries the same key and is ignored.
+   */
+  key?: string;
 };
 
 export type ReviewComment = ReviewMessage & {
@@ -86,7 +98,7 @@ export type ReviewComment = ReviewMessage & {
 /** The name Claude replies and resolves under (scripts/review-watch.ts). */
 export const AGENT = "Claude";
 
-const WEBHOOK_FILE = fileURLToPath(new URL("./webhook.json", import.meta.url));
+const WEBHOOK_FILE = join(DIR, "webhook.json");
 
 type Webhook = { url: string; secret: string };
 
@@ -155,6 +167,7 @@ export function readComments(): ReviewComment[] {
 }
 
 function writeComments(comments: ReviewComment[]) {
+  mkdirSync(DIR, { recursive: true });
   const tmp = `${COMMENTS_FILE}.tmp`;
   writeFileSync(tmp, `${JSON.stringify(comments, null, 2)}\n`);
   renameSync(tmp, COMMENTS_FILE);
@@ -378,6 +391,9 @@ export function reviewServer(): Plugin {
 
           if (req.method === "POST" && !id) {
             const data = await json(req);
+            const key = clean(data.key, 64);
+            const seen = key && comments.find((c) => c.key === key);
+            if (seen) return send(res, 200, seen);
             const anchor = data.anchor as Partial<ReviewAnchor> | undefined;
             const comment: ReviewComment = {
               id: crypto.randomUUID(),
@@ -398,6 +414,7 @@ export function reviewServer(): Plugin {
               createdAt: new Date().toISOString(),
               resolved: false,
               replies: [],
+              ...(key && { key }),
             };
             if (
               !comment.body &&
@@ -422,6 +439,10 @@ export function reviewServer(): Plugin {
 
           if (req.method === "PATCH") {
             const data = await json(req);
+            const key = clean(data.key, 64);
+            if (key && comment.replies.some((r) => r.key === key)) {
+              return send(res, 200, comment);
+            }
             const wasResolved = comment.resolved;
             if (typeof data.resolved === "boolean") {
               comment.resolved = data.resolved;
@@ -434,6 +455,7 @@ export function reviewServer(): Plugin {
                 body: reply,
                 createdAt: new Date().toISOString(),
                 attachments: files,
+                ...(key && { key }),
               });
             }
             writeComments(comments);

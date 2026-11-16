@@ -49,7 +49,13 @@ TWILL site.
 - **💬 Review** (bottom left) → **+ Add a comment** → click anything on the
   page, or select text first. Threads support replies, resolve and
   attachments (stored at full resolution in `review/uploads/`, gitignored).
-- Comments live in `review/comments.json` (gitignored). `bun run review`
+- Nothing is lost while the server is down or restarting: the browser keeps
+  every comment, reply, resolve and delete (attachments included) in an
+  outbox in IndexedDB (`app/review/outbox.ts`), shows them as waiting, and
+  sends them once the server answers again. Each carries a key the server
+  uses to ignore repeats. Half-written text survives Vite's reload too.
+- Comments live in `review/comments.json` (gitignored; `REVIEW_DIR` moves
+  them, which the tests use to keep to a scratch folder). `bun run review`
   prints the open ones as Markdown (`--all` includes resolved).
 - **Webhook:** with `review/webhook.json` (`{"url", "secret"}`, gitignored)
   the server POSTs every reviewer comment, reply, withdrawal and reopen
