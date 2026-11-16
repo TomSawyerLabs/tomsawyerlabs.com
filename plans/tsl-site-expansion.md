@@ -128,8 +128,8 @@ counter, Empyrean Gate, the HIL runner and clearance.
    found so far: Math Camp's Burning Man applications call the camp "home of
    the fabulous Electric Cupcakes", and a 2014 `cupcakes` photo folder in
    Drive. Nothing on the bumper cars.
-9. More playa/art projects to add? Candidates seen in `P:\Projects`:
-   FoldHaus, Burn Bed, Quasar, Skull. (Uprising is client work.)
+9. ~~More projects from `P:\Projects`~~: FoldHaus, Burn Bed, Quasar and
+   Skull stay off the site (Cameron, 2026-11-15).
 
 ## TSL projects (Cameron, 2026-11-15)
 
