@@ -118,7 +118,7 @@ counter, Empyrean Gate, the HIL runner and clearance.
    10 linked repos lack one (mcu-hil, hil-runner, uMaker, usb-dfu,
    print-template, HyparShade, telemetry-collector, smtp-bridge, wifi-tester,
    plan-presenter).
-6. Group pages for the small embedded pieces and Caddy modules?
+6. ~~Group pages~~: no, small pieces stay as cards (Cameron, 2026-11-15).
 7. ~~Review notifications~~: webhook into this Claude thread, live and
    tested (2026-11-15).
 8. Cupcake trikes and playa bumper cars (2026-11-15, Cameron: "don't forget
