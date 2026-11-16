@@ -114,9 +114,10 @@ counter, Empyrean Gate, the HIL runner and clearance.
 3. ~~claude-usage window priming~~: keep it and scheduled messages off
    the site (Cameron, 2026-11-15).
 4. ~~HyparHuts copy thin~~: rewritten from `cinderblock/HyparHut`'s README.
-5. 13 repos have no LICENSE file (hil-runner, mcu-hil, plan-presenter,
-   telemetry-collector, smtp-bridge, wifi-tester, HotPi, react-smoothie and
-   others). Add them? (Separate task, per repo.)
+5. ~~LICENSE files~~: add later as a separate job (Cameron, 2026-11-15).
+   10 linked repos lack one (mcu-hil, hil-runner, uMaker, usb-dfu,
+   print-template, HyparShade, telemetry-collector, smtp-bridge, wifi-tester,
+   plan-presenter).
 6. Group pages for the small embedded pieces and Caddy modules?
 7. ~~Review notifications~~: webhook into this Claude thread, live and
    tested (2026-11-15).
