@@ -171,6 +171,17 @@ Out:
   package copied (`cp -rL`) from master's node_modules. CI is unaffected.
 - Preview screenshots sometimes time out once; a retry works.
 
+- Review outbox (2026-11-15, `873f316`): Cameron asked that the browser
+  hold comments while the review server is down and send them when it's
+  back. Done with an IndexedDB outbox plus server-side dedupe keys; tested
+  in `tests/review.spec.ts` (all three browsers). Before this, a comment
+  saved while the server was down was silently lost. The TWILL site's
+  overlay (where this one came from) still has that gap.
+- The review server needs its folder to exist before writing; with
+  `REVIEW_DIR` pointing somewhere new, saves 500'd until `writeComments`
+  learned to create it. Playwright also empties `test-results/` at the start
+  of a run, so test review data lives in the OS temp folder instead.
+
 ## Things not to do
 
 - Don't build on the June showcase branch; Cameron chose to start fresh.
