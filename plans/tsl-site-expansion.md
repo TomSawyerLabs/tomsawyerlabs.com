@@ -103,7 +103,9 @@ counter, Empyrean Gate, the HIL runner and clearance.
        `review/webhook.json` (gitignored). Verified: unsigned -> 401, signed
        test -> 202. If the token is rotated, update webhook.json.
 6. [ ] Group pages (AVR toolkit, Saleae analyzers, Caddy modules), if wanted.
-7. [ ] Real photos and screenshots per project.
+7. [ ] Real photos and screenshots per project. Shot list (photos):
+       https://claude.ai/artifact/4b2seKYHTSnvDuhTj3a5Bu (2026-11-17). Photos
+       arrive as attachments on review comments.
 8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes,
        and not before the photos are in (Cameron, 2026-11-15).
 
