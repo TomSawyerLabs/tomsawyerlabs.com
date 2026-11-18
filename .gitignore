@@ -39,6 +39,9 @@ playwright/.cache/
 # Review comments from the dev server (review/plugin.ts)
 review/comments.json
 review/comments.json.tmp
+# Photos filed against the shot list (review/shots.ts)
+review/shots.json
+review/shots.json.tmp
 
 # Full-resolution pictures attached to review comments
 review/uploads/

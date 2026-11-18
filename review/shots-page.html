@@ -1,0 +1,1430 @@
+<!doctype html>
+<!--
+  The shot list, for a phone: walk around, take the photos the site needs,
+  and file each against its project. Served at /__shots by the dev server
+  (review/plugin.ts); the list itself is review/shots.ts.
+
+  Photos are queued in IndexedDB before they upload, so a weak Wi-Fi spot
+  or a server restart loses nothing; the queue sends when it can.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#b23a2a" />
+    <title>TSL shot list</title>
+    <style>
+      :root {
+        --paper: #f6f1e7;
+        --card: #fffdf8;
+        --ink: #2b2420;
+        --muted: #6f655c;
+        --rule: #ddd3c4;
+        --accent: #b23a2a;
+        --accent-ink: #fff;
+        --ok: #2f7d4f;
+        --warn: #a86a00;
+        --shadow: 0 6px 20px rgba(60, 40, 20, 0.12);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #15130f;
+          --card: #1f1c17;
+          --ink: #eee7da;
+          --muted: #a89e90;
+          --rule: #38322a;
+          --accent: #d9553f;
+          --ok: #5cbf86;
+          --warn: #e3a33a;
+          --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          16px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        padding-bottom: calc(96px + env(safe-area-inset-bottom));
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--paper);
+        padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+      .who {
+        font-size: 0.85rem;
+        color: var(--muted);
+        background: none;
+        border: 0;
+        padding: 0;
+        text-decoration: underline;
+      }
+      .bar {
+        height: 8px;
+        margin-top: 8px;
+        border-radius: 99px;
+        background: var(--rule);
+        overflow: hidden;
+      }
+      .bar > i {
+        display: block;
+        height: 100%;
+        background: var(--ok);
+        transition: width 0.3s;
+      }
+      .counts {
+        margin-top: 4px;
+        font-size: 0.85rem;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .sync.waiting {
+        color: var(--warn);
+        font-weight: 600;
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .tabs button {
+        flex: 1;
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+        font-weight: 600;
+      }
+      .tabs button[aria-pressed="true"] {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      main {
+        padding: 14px 16px;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .places {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        margin: 0 -16px 10px;
+        padding-inline: 16px;
+        scrollbar-width: none;
+      }
+      .places button {
+        flex: none;
+        padding: 6px 12px;
+        border-radius: 99px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+      .places button[aria-pressed="true"] {
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+      .project {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .shot-title {
+        margin: 4px 0 8px;
+        font-size: 1.35rem;
+        line-height: 1.25;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .tag {
+        font-size: 0.75rem;
+        padding: 1px 8px;
+        border-radius: 99px;
+        border: 1px solid var(--rule);
+        color: var(--muted);
+      }
+      .tag.lead {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .tag.done {
+        border-color: var(--ok);
+        color: var(--ok);
+      }
+      .tag.skipped {
+        border-color: var(--warn);
+        color: var(--warn);
+      }
+      .where {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .shoot {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .big {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 56px;
+        border-radius: 14px;
+        border: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        background: var(--accent);
+        color: var(--accent-ink);
+        position: relative;
+      }
+      .secondary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 46px;
+        border-radius: 12px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+        position: relative;
+        font-weight: 600;
+      }
+      .big input,
+      .secondary input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        width: 100%;
+        cursor: pointer;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .thumbs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+        gap: 6px;
+        margin-top: 12px;
+      }
+      .thumb {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--rule);
+        background: var(--rule);
+        padding: 0;
+      }
+      .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .thumb .state {
+        position: absolute;
+        inset: auto 0 0 0;
+        padding: 2px 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        text-align: center;
+      }
+      .thumb .who-tag {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        font-size: 0.65rem;
+        padding: 0 5px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+      }
+
+      .nav {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .nav button {
+        min-height: 46px;
+        border-radius: 12px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+        font-weight: 600;
+      }
+      .nav .next {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .empty {
+        text-align: center;
+        padding: 28px 12px;
+        color: var(--muted);
+      }
+      .empty strong {
+        display: block;
+        font-size: 1.2rem;
+        color: var(--ink);
+        margin-bottom: 4px;
+      }
+
+      .group h2 {
+        font-size: 0.95rem;
+        margin: 18px 0 6px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+      }
+      .group ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+      }
+      .item {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        text-align: left;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+      }
+      .item .tick {
+        width: 24px;
+        height: 24px;
+        border-radius: 99px;
+        border: 2px solid var(--rule);
+        display: grid;
+        place-items: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+      .item.done .tick {
+        background: var(--ok);
+        border-color: var(--ok);
+        color: #fff;
+      }
+      .item.skipped .tick {
+        border-color: var(--warn);
+        color: var(--warn);
+      }
+      .item.skipped .t {
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+      .item .p {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .item .n {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .extra {
+        margin-top: 18px;
+      }
+      .extra select {
+        width: 100%;
+        min-height: 46px;
+        border-radius: 12px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+        padding: 0 10px;
+        margin-bottom: 8px;
+      }
+      label.field {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      dialog {
+        width: min(100vw - 24px, 560px);
+        max-height: calc(100dvh - 24px);
+        border: 0;
+        border-radius: 16px;
+        padding: 0;
+        background: var(--card);
+        color: var(--ink);
+        box-shadow: var(--shadow);
+      }
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+      }
+      .sheet {
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+      }
+      .sheet img {
+        width: 100%;
+        max-height: 55dvh;
+        object-fit: contain;
+        border-radius: 10px;
+        background: #000;
+      }
+      .sheet select,
+      .sheet input[type="text"] {
+        width: 100%;
+        min-height: 46px;
+        border-radius: 12px;
+        border: 1px solid var(--rule);
+        background: var(--paper);
+        padding: 0 10px;
+      }
+      .sheet .meta {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .danger {
+        color: #c4372b;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(16px + env(safe-area-inset-bottom));
+        translate: -50% 0;
+        z-index: 20;
+        padding: 10px 16px;
+        border-radius: 99px;
+        background: var(--ink);
+        color: var(--paper);
+        font-weight: 600;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        max-width: calc(100vw - 32px);
+      }
+      .toast.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="top">
+        <h1>TSL shot list</h1>
+        <button type="button" class="who" id="who"></button>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="counts">
+        <span id="count"></span><span class="sync" id="sync"></span>
+      </div>
+      <div class="tabs" role="group" aria-label="View">
+        <button type="button" data-view="walk" aria-pressed="true">Walk</button>
+        <button type="button" data-view="list" aria-pressed="false">
+          List
+        </button>
+        <button type="button" data-view="extra" aria-pressed="false">
+          + Other
+        </button>
+      </div>
+    </header>
+    <main id="main"><p class="empty">Loading…</p></main>
+
+    <dialog id="sheet"><div class="sheet" id="sheet-body"></div></dialog>
+    <div class="toast" id="toast" role="status"></div>
+
+    <script type="module">
+      const API = "/__shots/api";
+      const UPLOADS = "/__review/uploads";
+      const NAME_KEY = "tsl-review-name";
+      const VIEW_KEY = "tsl-shots-view";
+
+      // ---- small helpers --------------------------------------------------
+      // Not crypto.randomUUID(): phones reach this over plain http on the
+      // LAN, where it doesn't exist.
+      const newKey = () =>
+        [...crypto.getRandomValues(new Uint8Array(16))]
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      const $ = (sel) => document.querySelector(sel);
+      const h = (tag, props = {}, ...kids) => {
+        const el = document.createElement(tag);
+        for (const [k, v] of Object.entries(props)) {
+          if (v == null || v === false) continue;
+          if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+          else if (k === "class") el.className = v;
+          else if (k === "text") el.textContent = v;
+          else el.setAttribute(k, v === true ? "" : v);
+        }
+        for (const kid of kids.flat())
+          if (kid != null && kid !== false) el.append(kid);
+        return el;
+      };
+      const store = {
+        get(k) {
+          try {
+            return localStorage.getItem(k);
+          } catch {
+            return null;
+          }
+        },
+        set(k, v) {
+          try {
+            localStorage.setItem(k, v);
+          } catch {}
+        },
+      };
+      let toastTimer = 0;
+      function toast(msg) {
+        const t = $("#toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+      }
+
+      // ---- the upload queue (IndexedDB, survives reloads) -----------------
+      const db = new Promise((done) => {
+        try {
+          const req = indexedDB.open("tsl-shots", 1);
+          req.onupgradeneeded = () =>
+            req.result.createObjectStore("queue", { keyPath: "key" });
+          req.onsuccess = () => done(req.result);
+          req.onerror = () => done(null);
+        } catch {
+          done(null);
+        }
+      });
+      let memoryQueue = [];
+      async function q(mode, fn, fallback) {
+        const d = await db;
+        if (!d) return fallback();
+        return new Promise((done, fail) => {
+          const r = fn(d.transaction("queue", mode).objectStore("queue"));
+          r.onsuccess = () => done(r.result);
+          r.onerror = () => fail(r.error);
+        });
+      }
+      const queue = {
+        all: () =>
+          q(
+            "readonly",
+            (s) => s.getAll(),
+            () => [...memoryQueue],
+          ).then((items) => items.sort((a, b) => a.at.localeCompare(b.at))),
+        put: (item) =>
+          q(
+            "readwrite",
+            (s) => s.put(item),
+            () => {
+              memoryQueue = [
+                ...memoryQueue.filter((i) => i.key !== item.key),
+                item,
+              ];
+            },
+          ),
+        del: (key) =>
+          q(
+            "readwrite",
+            (s) => s.delete(key),
+            () => {
+              memoryQueue = memoryQueue.filter((i) => i.key !== key);
+            },
+          ),
+      };
+
+      // ---- state ----------------------------------------------------------
+      let data = {
+        shots: [],
+        places: [],
+        projects: [],
+        photos: [],
+        skipped: [],
+      };
+      let waiting = []; // queue items
+      let reachable = true;
+      // The last send failed for want of a connection. Uploads can fail
+      // while the small API calls still get through.
+      let sendBlocked = false;
+      let progress = {}; // key -> percent
+      let view = store.get(VIEW_KEY) || "walk";
+      let place = null;
+      let current = null; // shot id in the walk view
+      let name =
+        new URLSearchParams(location.search).get("name") ||
+        new URLSearchParams(location.search).get("reviewer") ||
+        store.get(NAME_KEY) ||
+        "";
+      if (name) store.set(NAME_KEY, name);
+      const urls = new Map(); // queue key -> object URL
+
+      const projectName = (slug) =>
+        data.projects.find((p) => p.slug === slug)?.name ?? slug;
+      const photosFor = (shotId) =>
+        data.photos.filter((p) => p.shot === shotId);
+      const waitingFor = (shotId) => waiting.filter((w) => w.shot === shotId);
+      const isDone = (s) =>
+        photosFor(s.id).length + waitingFor(s.id).length > 0;
+      const isSkipped = (s) => !isDone(s) && data.skipped.includes(s.id);
+      const isOpen = (s) => !isDone(s) && !isSkipped(s);
+      const shotsAt = (p) => data.shots.filter((s) => s.where === p);
+
+      async function load() {
+        try {
+          const res = await fetch(API, { cache: "no-store" });
+          if (!res.ok) throw new Error(String(res.status));
+          data = await res.json();
+          reachable = true;
+        } catch {
+          reachable = false;
+        }
+        waiting = await queue.all();
+        if (!place || !data.places.includes(place)) {
+          place =
+            data.places.find((p) => shotsAt(p).some(isOpen)) ?? data.places[0];
+        }
+        // Polling: only redraw when something changed, so a half-made
+        // choice on screen isn't wiped.
+        const sig = JSON.stringify([
+          data,
+          reachable,
+          sendBlocked,
+          waiting.map((w) => [w.key, w.error]),
+        ]);
+        if (sig === lastSig) return renderSync();
+        lastSig = sig;
+        render();
+      }
+      let lastSig = "";
+
+      // ---- sending --------------------------------------------------------
+      function upload(item) {
+        return new Promise((done, fail) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", UPLOADS);
+          xhr.setRequestHeader("X-File-Name", encodeURIComponent(item.name));
+          if (item.type) xhr.setRequestHeader("Content-Type", item.type);
+          xhr.upload.onprogress = (e) => {
+            progress[item.key] = e.total
+              ? Math.round((100 * e.loaded) / e.total)
+              : 0;
+            renderSync();
+            const label = document.querySelector(
+              `[data-key="${item.key}"] .state`,
+            );
+            if (label) label.textContent = `${progress[item.key]}%`;
+          };
+          xhr.onloadend = () => {
+            if (xhr.status === 201) done(JSON.parse(xhr.responseText));
+            else if (xhr.status === 0 || xhr.status >= 500)
+              fail(new Error("offline"));
+            else fail(new Error(`Upload refused (${xhr.status})`));
+          };
+          xhr.send(new Blob([item.data], { type: item.type }));
+        });
+      }
+
+      let flushing = null;
+      function flush() {
+        flushing ??= (async () => {
+          try {
+            sendBlocked = false;
+            for (const item of await queue.all()) {
+              if (item.error) continue;
+              try {
+                if (!item.attachment) {
+                  item.attachment = await upload(item);
+                  await queue.put(item);
+                }
+                const res = await fetch(`${API}/photos`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    key: item.key,
+                    shot: item.shot,
+                    project: item.project,
+                    by: item.by,
+                    attachment: item.attachment,
+                  }),
+                });
+                if (res.status >= 500) throw new Error("offline");
+                if (!res.ok) {
+                  const why = await res.json().catch(() => ({}));
+                  throw new Error(why.error || `Refused (${res.status})`);
+                }
+                await queue.del(item.key);
+                delete progress[item.key];
+              } catch (err) {
+                if (err.message === "offline" || err instanceof TypeError) {
+                  sendBlocked = true;
+                  return;
+                }
+                await queue.put({ ...item, error: err.message });
+              }
+            }
+          } finally {
+            flushing = null;
+            await load();
+          }
+        })();
+        return flushing;
+      }
+
+      async function addFiles(files, shot, project) {
+        if (!name) {
+          askName();
+          if (!name) return;
+        }
+        const list = [...files];
+        for (const file of list) {
+          await queue.put({
+            key: newKey(),
+            at: new Date().toISOString(),
+            shot: shot ?? null,
+            project,
+            by: name,
+            name: file.name || `photo-${Date.now()}.jpg`,
+            type: file.type,
+            // Raw bytes: Safari's IndexedDB won't store File objects.
+            data: await file.arrayBuffer(),
+          });
+        }
+        waiting = await queue.all();
+        toast(list.length > 1 ? `${list.length} photos saved` : "Photo saved");
+        render();
+        flush();
+      }
+
+      async function skip(shot, skipped) {
+        data.skipped = data.skipped.filter((id) => id !== shot.id);
+        if (skipped) data.skipped.push(shot.id);
+        render();
+        try {
+          await fetch(`${API}/skip`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ shot: shot.id, skipped }),
+          });
+        } catch {
+          toast("Couldn't reach the server; try again");
+        }
+        load();
+      }
+
+      function askName() {
+        const n = prompt(
+          "Your name (shown on the photos you take)",
+          name,
+        )?.trim();
+        if (n) {
+          name = n;
+          store.set(NAME_KEY, n);
+          renderHeader();
+        }
+      }
+
+      // ---- views ----------------------------------------------------------
+      function renderSync() {
+        const sending = waiting.filter((w) => !w.error);
+        const failed = waiting.filter((w) => w.error);
+        const el = $("#sync");
+        el.className =
+          "sync" + (sending.length || failed.length ? " waiting" : "");
+        if (failed.length)
+          el.textContent = `${failed.length} refused, see List`;
+        else if (!sending.length)
+          el.textContent = reachable ? "All saved" : "Offline";
+        else {
+          const pct = progress[sending[0].key];
+          el.textContent =
+            reachable && !sendBlocked
+              ? `Sending ${sending.length}…${pct != null ? ` ${pct}%` : ""}`
+              : `${sending.length} waiting for Wi-Fi`;
+        }
+      }
+
+      function renderHeader() {
+        const required = data.shots.filter((s) => !s.optional);
+        const doneReq = required.filter((s) => isDone(s)).length;
+        const total = data.shots.length;
+        const handled = data.shots.filter((s) => !isOpen(s)).length;
+        $("#bar").style.width =
+          `${required.length ? (100 * doneReq) / required.length : 0}%`;
+        $("#count").textContent =
+          `${doneReq} of ${required.length} needed · ${handled}/${total} handled`;
+        $("#who").textContent = name ? `as ${name}` : "Set your name";
+        for (const b of document.querySelectorAll(".tabs button")) {
+          b.setAttribute("aria-pressed", String(b.dataset.view === view));
+        }
+        renderSync();
+      }
+
+      function thumbs(shotId, project) {
+        const mine = shotId
+          ? photosFor(shotId)
+          : data.photos.filter((p) => !p.shot && p.project === project);
+        const queued = waiting.filter((w) =>
+          shotId ? w.shot === shotId : !w.shot && w.project === project,
+        );
+        if (!mine.length && !queued.length) return null;
+        return h(
+          "div",
+          { class: "thumbs" },
+          mine.map((p) =>
+            h(
+              "button",
+              {
+                type: "button",
+                class: "thumb",
+                onclick: () => openPhoto(p),
+                "aria-label": `Photo by ${p.by}`,
+              },
+              h("img", {
+                src: p.url,
+                alt: "",
+                loading: "lazy",
+                decoding: "async",
+              }),
+              h("span", { class: "who-tag", text: p.by }),
+            ),
+          ),
+          queued.map((w) => {
+            if (!urls.has(w.key))
+              urls.set(
+                w.key,
+                URL.createObjectURL(new Blob([w.data], { type: w.type })),
+              );
+            return h(
+              "button",
+              {
+                type: "button",
+                class: "thumb",
+                "data-key": w.key,
+                onclick: () => openQueued(w),
+              },
+              h("img", { src: urls.get(w.key), alt: "" }),
+              h("span", {
+                class: "state",
+                text: w.error
+                  ? "refused"
+                  : progress[w.key] != null
+                    ? `${progress[w.key]}%`
+                    : "waiting",
+              }),
+            );
+          }),
+        );
+      }
+
+      function pickers(onFiles) {
+        const camera = h("input", {
+          type: "file",
+          accept: "image/*",
+          capture: "environment",
+          "aria-label": "Take a photo",
+        });
+        camera.addEventListener("change", () => {
+          onFiles(camera.files);
+          camera.value = "";
+        });
+        const library = h("input", {
+          type: "file",
+          accept: "image/*",
+          multiple: true,
+          "aria-label": "Choose photos",
+        });
+        library.addEventListener("change", () => {
+          onFiles(library.files);
+          library.value = "";
+        });
+        return [
+          h("label", { class: "big" }, "📷 Take photo", camera),
+          h("label", { class: "secondary" }, "🖼 Choose from library", library),
+        ];
+      }
+
+      function nextOpen(afterId) {
+        const ordered = data.places.flatMap((p) => shotsAt(p));
+        const start = ordered.findIndex((s) => s.id === afterId);
+        const rest = [
+          ...ordered.slice(start + 1),
+          ...ordered.slice(0, start + 1),
+        ];
+        const samePlace = rest.find((s) => s.where === place && isOpen(s));
+        return samePlace ?? rest.find(isOpen) ?? null;
+      }
+
+      function renderWalk(main) {
+        main.append(
+          h(
+            "div",
+            { class: "places", role: "group", "aria-label": "Place" },
+            data.places.map((p) => {
+              const open = shotsAt(p).filter(isOpen).length;
+              return h(
+                "button",
+                {
+                  type: "button",
+                  "aria-pressed": String(p === place),
+                  onclick: () => {
+                    place = p;
+                    current = null;
+                    render();
+                  },
+                },
+                `${p}${open ? ` · ${open}` : " ✓"}`,
+              );
+            }),
+          ),
+        );
+
+        const here = shotsAt(place);
+        let shot = data.shots.find((s) => s.id === current);
+        if (!shot) shot = here.find(isOpen) ?? null;
+        if (!shot) {
+          const elsewhere = data.shots.find(isOpen);
+          main.append(
+            h(
+              "div",
+              { class: "card empty" },
+              h("strong", { text: `Nothing left at ${place}` }),
+              elsewhere
+                ? h(
+                    "button",
+                    {
+                      type: "button",
+                      class: "secondary",
+                      style: "margin-top:12px;width:100%",
+                      onclick: () => {
+                        place = elsewhere.where;
+                        current = elsewhere.id;
+                        render();
+                      },
+                    },
+                    `Next: ${elsewhere.where} →`,
+                  )
+                : "Every shot is done or skipped. Thank you!",
+            ),
+          );
+          return;
+        }
+        current = shot.id;
+        const pos = here.indexOf(shot) + 1;
+        main.append(
+          h(
+            "article",
+            { class: "card" },
+            h("div", { class: "project", text: projectName(shot.project) }),
+            h("h2", { class: "shot-title", text: shot.title }),
+            h(
+              "div",
+              { class: "tags" },
+              shot.lead && h("span", { class: "tag lead", text: "Lead photo" }),
+              shot.optional && h("span", { class: "tag", text: "Optional" }),
+              shot.who &&
+                h("span", { class: "tag", text: `${shot.who} has these` }),
+              isDone(shot) && h("span", { class: "tag done", text: "Done" }),
+              isSkipped(shot) &&
+                h("span", { class: "tag skipped", text: "Skipped" }),
+            ),
+            h("div", {
+              class: "where",
+              text: `${shot.where} · ${pos} of ${here.length} here`,
+            }),
+            h(
+              "div",
+              { class: "shoot" },
+              pickers((files) => addFiles(files, shot.id, shot.project)),
+            ),
+            thumbs(shot.id),
+            h(
+              "div",
+              { class: "nav" },
+              isSkipped(shot)
+                ? h(
+                    "button",
+                    { type: "button", onclick: () => skip(shot, false) },
+                    "Unskip",
+                  )
+                : h(
+                    "button",
+                    {
+                      type: "button",
+                      disabled: isDone(shot),
+                      onclick: () => {
+                        current = nextOpen(shot.id)?.id ?? null;
+                        skip(shot, true);
+                      },
+                    },
+                    "Skip",
+                  ),
+              h(
+                "button",
+                {
+                  type: "button",
+                  class: "next",
+                  onclick: () => {
+                    const n = nextOpen(shot.id);
+                    if (n) {
+                      place = n.where;
+                      current = n.id;
+                    } else current = null;
+                    render();
+                    scrollTo({ top: 0, behavior: "smooth" });
+                  },
+                },
+                "Next →",
+              ),
+            ),
+          ),
+        );
+      }
+
+      function renderList(main) {
+        const failed = waiting.filter((w) => w.error);
+        if (failed.length) {
+          main.append(
+            h(
+              "div",
+              { class: "card", style: "margin-bottom:12px" },
+              h("strong", { text: "Refused by the server" }),
+              failed.map((w) =>
+                h(
+                  "div",
+                  { class: "where" },
+                  `${w.name}: ${w.error} `,
+                  h(
+                    "button",
+                    {
+                      type: "button",
+                      class: "who",
+                      onclick: async () => {
+                        await queue.del(w.key);
+                        load();
+                      },
+                    },
+                    "Discard",
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        for (const p of data.places) {
+          const shots = shotsAt(p);
+          main.append(
+            h(
+              "section",
+              { class: "group" },
+              h(
+                "h2",
+                {},
+                h("span", { text: p }),
+                h("span", {
+                  text: `${shots.filter((s) => !isOpen(s)).length}/${shots.length}`,
+                }),
+              ),
+              h(
+                "ul",
+                {},
+                shots.map((s) => {
+                  const n = photosFor(s.id).length + waitingFor(s.id).length;
+                  return h(
+                    "li",
+                    {},
+                    h(
+                      "button",
+                      {
+                        type: "button",
+                        class: `item${isDone(s) ? " done" : ""}${isSkipped(s) ? " skipped" : ""}`,
+                        onclick: () => {
+                          place = s.where;
+                          current = s.id;
+                          setView("walk");
+                        },
+                      },
+                      h("span", {
+                        class: "tick",
+                        text: isDone(s) ? "✓" : isSkipped(s) ? "–" : "",
+                      }),
+                      h(
+                        "span",
+                        {},
+                        h("span", {
+                          class: "p",
+                          text:
+                            projectName(s.project) +
+                            (s.optional ? " · optional" : ""),
+                        }),
+                        h("span", { class: "t", text: s.title }),
+                      ),
+                      h("span", { class: "n", text: n ? `${n} 📷` : "" }),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          );
+        }
+        const extras =
+          data.photos.filter((p) => !p.shot).length +
+          waiting.filter((w) => !w.shot).length;
+        if (extras)
+          main.append(
+            h(
+              "p",
+              { class: "where", style: "margin-top:16px" },
+              `Plus ${extras} other photo${extras > 1 ? "s" : ""}, under + Other.`,
+            ),
+          );
+      }
+
+      let extraProject = store.get("tsl-shots-extra") || "";
+      function renderExtra(main) {
+        const select = h(
+          "select",
+          {
+            id: "extra-project",
+            onchange: () => {
+              extraProject = select.value;
+              store.set("tsl-shots-extra", extraProject);
+              render();
+            },
+          },
+          h("option", { value: "", text: "Pick a project…" }),
+          data.projects.map((p) =>
+            h("option", {
+              value: p.slug,
+              selected: p.slug === extraProject,
+              text: p.name,
+            }),
+          ),
+        );
+        main.append(
+          h(
+            "div",
+            { class: "card" },
+            h("h2", {
+              class: "shot-title",
+              text: "Something else worth a photo?",
+            }),
+            h("p", {
+              class: "where",
+              text: "File it against any project. Extras are welcome.",
+            }),
+            h(
+              "div",
+              { class: "extra" },
+              h("label", {
+                class: "field",
+                for: "extra-project",
+                text: "Project",
+              }),
+              select,
+              extraProject
+                ? h(
+                    "div",
+                    { class: "shoot" },
+                    pickers((files) => addFiles(files, null, extraProject)),
+                  )
+                : null,
+              extraProject ? thumbs(null, extraProject) : null,
+            ),
+          ),
+        );
+        const byProject = new Map();
+        for (const p of data.photos.filter((p) => !p.shot))
+          byProject.set(p.project, (byProject.get(p.project) ?? 0) + 1);
+        if (byProject.size) {
+          main.append(
+            h(
+              "section",
+              { class: "group" },
+              h("h2", { text: "Other photos so far" }),
+              h(
+                "ul",
+                {},
+                [...byProject].map(([slug, n]) =>
+                  h(
+                    "li",
+                    {},
+                    h(
+                      "button",
+                      {
+                        type: "button",
+                        class: "item done",
+                        onclick: () => {
+                          extraProject = slug;
+                          store.set("tsl-shots-extra", slug);
+                          render();
+                          scrollTo({ top: 0 });
+                        },
+                      },
+                      h("span", { class: "tick", text: "✓" }),
+                      h("span", { class: "t", text: projectName(slug) }),
+                      h("span", { class: "n", text: `${n} 📷` }),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      }
+
+      function render() {
+        renderHeader();
+        const main = $("#main");
+        main.replaceChildren();
+        if (!data.shots.length) {
+          main.append(
+            h("p", {
+              class: "empty",
+              text: reachable
+                ? "No shots listed."
+                : "Can't reach the server. Is the Wi-Fi on?",
+            }),
+          );
+          return;
+        }
+        if (view === "list") renderList(main);
+        else if (view === "extra") renderExtra(main);
+        else renderWalk(main);
+      }
+
+      function setView(v) {
+        view = v;
+        store.set(VIEW_KEY, v);
+        render();
+        scrollTo({ top: 0 });
+      }
+
+      // ---- photo sheet ----------------------------------------------------
+      function openPhoto(photo) {
+        const sheet = $("#sheet");
+        const move = h(
+          "select",
+          { "aria-label": "File under" },
+          h(
+            "optgroup",
+            { label: "Shots" },
+            data.shots.map((s) =>
+              h("option", {
+                value: `shot:${s.id}`,
+                selected: photo.shot === s.id,
+                text: `${projectName(s.project)}: ${s.title}`,
+              }),
+            ),
+          ),
+          h(
+            "optgroup",
+            { label: "Other photo of" },
+            data.projects.map((p) =>
+              h("option", {
+                value: `project:${p.slug}`,
+                selected: !photo.shot && photo.project === p.slug,
+                text: p.name,
+              }),
+            ),
+          ),
+        );
+        const when = new Date(photo.at).toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          timeZoneName: "short",
+        });
+        $("#sheet-body").replaceChildren(
+          h("img", { src: photo.url, alt: "" }),
+          h("div", {
+            class: "meta",
+            text: `${photo.by} · ${when} · ${(photo.size / 1e6).toFixed(1)} MB`,
+          }),
+          h("label", { class: "field", text: "File under" }),
+          move,
+          h(
+            "div",
+            { class: "row" },
+            h(
+              "button",
+              {
+                type: "button",
+                class: "secondary danger",
+                onclick: async () => {
+                  if (
+                    !confirm(
+                      "Remove this photo from the list? (The file is kept.)",
+                    )
+                  )
+                    return;
+                  await fetch(`${API}/photos/${photo.id}`, {
+                    method: "DELETE",
+                  }).catch(() => toast("Couldn't reach the server"));
+                  sheet.close();
+                  load();
+                },
+              },
+              "Remove",
+            ),
+            h(
+              "button",
+              {
+                type: "button",
+                class: "secondary",
+                onclick: async () => {
+                  const [kind, id] = move.value.split(/:(.*)/);
+                  await fetch(`${API}/photos/${photo.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(
+                      kind === "shot" ? { shot: id } : { project: id },
+                    ),
+                  }).catch(() => toast("Couldn't reach the server"));
+                  sheet.close();
+                  toast("Moved");
+                  load();
+                },
+              },
+              "Save",
+            ),
+          ),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "secondary",
+              onclick: () => sheet.close(),
+            },
+            "Close",
+          ),
+        );
+        sheet.showModal();
+      }
+
+      function openQueued(item) {
+        const sheet = $("#sheet");
+        $("#sheet-body").replaceChildren(
+          h("img", { src: urls.get(item.key), alt: "" }),
+          h("div", {
+            class: "meta",
+            text: item.error
+              ? `Refused: ${item.error}`
+              : "Saved on this phone; it uploads when the server answers.",
+          }),
+          h(
+            "div",
+            { class: "row" },
+            h(
+              "button",
+              {
+                type: "button",
+                class: "secondary danger",
+                onclick: async () => {
+                  await queue.del(item.key);
+                  sheet.close();
+                  load();
+                },
+              },
+              "Discard",
+            ),
+            h(
+              "button",
+              {
+                type: "button",
+                class: "secondary",
+                onclick: () => sheet.close(),
+              },
+              "Close",
+            ),
+          ),
+        );
+        sheet.showModal();
+      }
+      $("#sheet").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) e.currentTarget.close();
+      });
+
+      // ---- wiring ---------------------------------------------------------
+      for (const b of document.querySelectorAll(".tabs button"))
+        b.addEventListener("click", () => setView(b.dataset.view));
+      $("#who").addEventListener("click", askName);
+      addEventListener("online", flush);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) flush();
+      });
+      setInterval(() => {
+        if (waiting.some((w) => !w.error)) flush();
+        else load();
+      }, 8000);
+      await load();
+      flush();
+    </script>
+  </body>
+</html>

@@ -63,6 +63,13 @@ TWILL site.
   points at a T3 Code scheduled task ("On webhook", signature required) that
   posts each one into a single Claude thread. While it's set, the panel
   shows that Claude is watching. Claude's own replies aren't sent.
+- **Shot list:** `http://<LAN IP>:<port>/__shots?name=Name` is a phone page
+  for taking the site's photos. It walks you place by place through the
+  shots in `review/shots.ts` (edit that to change the list), files each
+  photo against its shot or as an extra for any project, and keeps photos on
+  the phone until they've uploaded. Photos land in `review/uploads/`, the
+  filing in `review/shots.json` (gitignored); `bun run shots` lists them
+  with their files (`--open` for what's still needed).
 - `bun run review:watch` streams new comments for a Claude session to act on
   (`--port`, default 5181; see the script's header for `--reply`,
   `--resolve` and `--discuss`).

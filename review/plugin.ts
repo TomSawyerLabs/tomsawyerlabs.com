@@ -31,6 +31,8 @@ import { createHmac, randomUUID } from "node:crypto";
 import { basename, extname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
+import { PROJECTS } from "../app/content/projects.ts";
+import { PLACES, SHOTS } from "./shots.ts";
 
 /**
  * Where comments, uploads and the webhook config live: review/, or
@@ -43,6 +45,8 @@ const DIR = process.env.REVIEW_DIR
 
 export const COMMENTS_FILE = join(DIR, "comments.json");
 export const UPLOADS_DIR = join(DIR, "uploads");
+/** Photos taken against the shot list (review/shots.ts). */
+export const SHOTS_FILE = join(DIR, "shots.json");
 
 /** Largest single upload: big enough for raw camera files and PDFs. */
 const MAX_UPLOAD = 200 * 1024 * 1024;
@@ -277,6 +281,128 @@ async function upload(req: IncomingMessage): Promise<ReviewAttachment> {
   };
 }
 
+// The shot list (/__shots): photos taken on a phone and filed against the
+// shots in review/shots.ts, or against a project as an extra.
+
+export type ShotPhoto = ReviewAttachment & {
+  id: string;
+  /** The shot it answers, or null for an extra photo of the project. */
+  shot: string | null;
+  /** Project slug, or "home". */
+  project: string;
+  by: string;
+  at: string;
+  /** The phone's queue key, so a retried upload isn't filed twice. */
+  key?: string;
+};
+
+type ShotState = { photos: ShotPhoto[]; skipped: string[] };
+
+export function readShots(): ShotState {
+  if (!existsSync(SHOTS_FILE)) return { photos: [], skipped: [] };
+  return JSON.parse(readFileSync(SHOTS_FILE, "utf8")) as ShotState;
+}
+
+function writeShots(state: ShotState) {
+  mkdirSync(DIR, { recursive: true });
+  const tmp = `${SHOTS_FILE}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`);
+  renameSync(tmp, SHOTS_FILE);
+}
+
+/** Every project a photo can be filed against, home page first. */
+function shotProjects() {
+  return [
+    { slug: "home", name: "Home page" },
+    ...PROJECTS.map((p) => ({ slug: p.slug, name: p.name })),
+  ];
+}
+
+const SHOTS_PAGE = fileURLToPath(new URL("./shots-page.html", import.meta.url));
+
+async function shotsApi(req: IncomingMessage, res: ServerResponse) {
+  const url = new URL(req.url ?? "/", "http://local");
+  const parts = url.pathname.split("/").filter(Boolean);
+  // Read the body first, then the state, with no await between reading and
+  // writing it: otherwise two phones sending at once lose one's photo.
+  const body =
+    req.method === "POST" || req.method === "PATCH" ? await json(req) : {};
+  const state = readShots();
+  const projects = shotProjects();
+
+  if (!parts.length && req.method === "GET") {
+    return send(res, 200, { shots: SHOTS, places: PLACES, projects, ...state });
+  }
+
+  if (parts[0] === "photos" && !parts[1] && req.method === "POST") {
+    const data = body;
+    const key = clean(data.key, 64);
+    const seen = key && state.photos.find((p) => p.key === key);
+    if (seen) return send(res, 200, seen);
+    const [file] = attachments([data.attachment]);
+    if (!file) return send(res, 400, { error: "No uploaded file" });
+    const shot = SHOTS.find((s) => s.id === data.shot);
+    const project = shot?.project ?? clean(data.project, 100);
+    if (!projects.some((p) => p.slug === project)) {
+      return send(res, 400, { error: "Unknown project" });
+    }
+    const photo: ShotPhoto = {
+      id: randomUUID(),
+      shot: shot?.id ?? null,
+      project,
+      by: clean(data.by, 60) || "Anonymous",
+      at: new Date().toISOString(),
+      ...file,
+      ...(key && { key }),
+    };
+    state.photos.push(photo);
+    // A photo answers a shot someone had skipped.
+    state.skipped = state.skipped.filter((id) => id !== photo.shot);
+    writeShots(state);
+    return send(res, 201, photo);
+  }
+
+  if (parts[0] === "photos" && parts[1]) {
+    const photo = state.photos.find((p) => p.id === parts[1]);
+    if (!photo) return send(res, 404, { error: "No such photo" });
+    if (req.method === "DELETE") {
+      // The file stays in uploads/: pictures are worth keeping.
+      state.photos = state.photos.filter((p) => p !== photo);
+      writeShots(state);
+      return send(res, 200, { ok: true });
+    }
+    if (req.method === "PATCH") {
+      const data = body;
+      const shot = SHOTS.find((s) => s.id === data.shot);
+      if (shot) {
+        photo.shot = shot.id;
+        photo.project = shot.project;
+      } else if (projects.some((p) => p.slug === data.project)) {
+        photo.shot = null;
+        photo.project = String(data.project);
+      } else {
+        return send(res, 400, { error: "Unknown shot or project" });
+      }
+      writeShots(state);
+      return send(res, 200, photo);
+    }
+  }
+
+  if (parts[0] === "skip" && req.method === "POST") {
+    const data = body;
+    const id = clean(data.shot, 100);
+    if (!SHOTS.some((s) => s.id === id)) {
+      return send(res, 400, { error: "Unknown shot" });
+    }
+    state.skipped = state.skipped.filter((s) => s !== id);
+    if (data.skipped === true) state.skipped.push(id);
+    writeShots(state);
+    return send(res, 200, { skipped: state.skipped });
+  }
+
+  send(res, 405, { error: "Method not allowed" });
+}
+
 /**
  * True for loopback, private LAN, Tailscale and link-local addresses. The
  * dev server listens on every interface (vite.config.ts), including this
@@ -358,6 +484,23 @@ export function reviewServer(): Plugin {
         }
       });
 
+      // The shot list: a phone page, and its API.
+      server.middlewares.use("/__shots", async (req, res) => {
+        try {
+          const path = new URL(req.url ?? "/", "http://l").pathname;
+          if (path.startsWith("/api")) {
+            req.url = path.slice(4) || "/";
+            return await shotsApi(req, res);
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(readFileSync(SHOTS_PAGE, "utf8"));
+        } catch (error) {
+          send(res, 500, { error: String(error) });
+        }
+      });
+
       // The watcher's heartbeat, and the page's question "is anyone there?".
       server.middlewares.use("/__review/watcher", async (req, res) => {
         if (req.method === "POST") {
@@ -378,6 +521,11 @@ export function reviewServer(): Plugin {
         try {
           const url = new URL(req.url ?? "/", "http://local");
           const id = url.pathname.replace(/^\/+/, "");
+          // Body first, then the file (see shotsApi): no lost writes.
+          const body =
+            req.method === "POST" || req.method === "PATCH"
+              ? await json(req)
+              : {};
           const comments = readComments();
 
           if (req.method === "GET" && !id) {
@@ -390,7 +538,7 @@ export function reviewServer(): Plugin {
           }
 
           if (req.method === "POST" && !id) {
-            const data = await json(req);
+            const data = body;
             const key = clean(data.key, 64);
             const seen = key && comments.find((c) => c.key === key);
             if (seen) return send(res, 200, seen);
@@ -438,7 +586,7 @@ export function reviewServer(): Plugin {
           if (!comment) return send(res, 404, { error: "No such comment" });
 
           if (req.method === "PATCH") {
-            const data = await json(req);
+            const data = body;
             const key = clean(data.key, 64);
             if (key && comment.replies.some((r) => r.key === key)) {
               return send(res, 200, comment);

@@ -691,10 +691,14 @@ function useUploads() {
         if (xhr.status === 201) {
           setFiles((f) => [...f, JSON.parse(xhr.responseText)]);
         } else if (xhr.status === 0 || xhr.status >= 500) {
-          setWaiting((w) => [
-            ...w,
-            { name: file.name, type: file.type, blob: file },
-          ]);
+          void file
+            .arrayBuffer()
+            .then((data) =>
+              setWaiting((w) => [
+                ...w,
+                { name: file.name, type: file.type, data },
+              ]),
+            );
         } else {
           setError(`Couldn't upload ${file.name}`);
         }

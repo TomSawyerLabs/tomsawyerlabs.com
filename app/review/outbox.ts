@@ -11,7 +11,11 @@ const DB = "tsl-review";
 const STORE = "outbox";
 
 /** A file picked while the server was unreachable, not uploaded yet. */
-export type PendingFile = { name: string; type: string; blob: Blob };
+/**
+ * A file picked while the server was unreachable, not uploaded yet. Kept as
+ * raw bytes: Safari's IndexedDB refuses to store File and Blob objects.
+ */
+export type PendingFile = { name: string; type: string; data: ArrayBuffer };
 
 export type OutboxItem = {
   /** Made in the browser; the server stores it to recognise a repeat. */
@@ -102,6 +106,15 @@ export async function remove(key: string): Promise<void> {
   );
 }
 
+/**
+ * A random key. Not crypto.randomUUID(): that exists only in secure
+ * contexts, and reviewers reach the dev server over plain http on the LAN.
+ */
+export function newKey(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export function newItem(
   path: string,
   method: OutboxItem["method"],
@@ -110,7 +123,7 @@ export function newItem(
   target?: string,
 ): OutboxItem {
   return {
-    key: crypto.randomUUID(),
+    key: newKey(),
     createdAt: new Date().toISOString(),
     path,
     method,
@@ -133,7 +146,7 @@ export async function uploadFile(
         "X-File-Name": encodeURIComponent(file.name),
         ...(file.type && { "Content-Type": file.type }),
       },
-      body: file.blob,
+      body: new Blob([file.data], { type: file.type }),
     });
   } catch {
     throw new Offline();
