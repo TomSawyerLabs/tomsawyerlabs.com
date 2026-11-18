@@ -374,6 +374,9 @@
         border-color: var(--ok);
         color: #fff;
       }
+      .item.later .tick {
+        color: var(--muted);
+      }
       .item.skipped .tick {
         border-color: var(--warn);
         color: var(--warn);
@@ -634,6 +637,12 @@
       const isSkipped = (s) => !isDone(s) && data.skipped.includes(s.id);
       const isOpen = (s) => !isDone(s) && !isSkipped(s);
       const shotsAt = (p) => data.shots.filter((s) => s.where === p);
+      // "Skip for now": this phone comes back to these after everything else.
+      const LATER_KEY = "tsl-shots-later";
+      let later = new Set(JSON.parse(store.get(LATER_KEY) || "[]"));
+      const saveLater = () => store.set(LATER_KEY, JSON.stringify([...later]));
+      const isLater = (s) => isOpen(s) && later.has(s.id);
+      const isFresh = (s) => isOpen(s) && !later.has(s.id);
 
       async function load() {
         try {
@@ -916,8 +925,51 @@
           ...ordered.slice(start + 1),
           ...ordered.slice(0, start + 1),
         ];
-        const samePlace = rest.find((s) => s.where === place && isOpen(s));
-        return samePlace ?? rest.find(isOpen) ?? null;
+        return (
+          rest.find((s) => s.where === place && isFresh(s)) ??
+          rest.find(isFresh) ??
+          rest.find(isOpen) ??
+          null
+        );
+      }
+
+      function goNext(shot) {
+        const n = nextOpen(shot.id);
+        if (n) {
+          place = n.where;
+          current = n.id;
+        } else current = null;
+        render();
+        scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function navButtons(shot) {
+        const button = (label, onclick, cls) =>
+          h("button", { type: "button", class: cls, onclick }, label);
+        if (isSkipped(shot)) {
+          return [
+            button("Unskip", () => skip(shot, false)),
+            button("Next →", () => goNext(shot), "next"),
+          ];
+        }
+        if (isDone(shot)) {
+          return [h("span"), button("Next →", () => goNext(shot), "next")];
+        }
+        return [
+          button("Skip for good", () => {
+            current = nextOpen(shot.id)?.id ?? null;
+            skip(shot, true);
+          }),
+          button(
+            "Skip for now →",
+            () => {
+              later.add(shot.id);
+              saveLater();
+              goNext(shot);
+            },
+            "next",
+          ),
+        ];
       }
 
       function renderWalk(main) {
@@ -946,9 +998,9 @@
 
         const here = shotsAt(place);
         let shot = data.shots.find((s) => s.id === current);
-        if (!shot) shot = here.find(isOpen) ?? null;
+        if (!shot) shot = here.find(isFresh) ?? here.find(isOpen) ?? null;
         if (!shot) {
-          const elsewhere = data.shots.find(isOpen);
+          const elsewhere = data.shots.find(isFresh) ?? data.shots.find(isOpen);
           main.append(
             h(
               "div",
@@ -992,6 +1044,8 @@
               isDone(shot) && h("span", { class: "tag done", text: "Done" }),
               isSkipped(shot) &&
                 h("span", { class: "tag skipped", text: "Skipped" }),
+              isLater(shot) &&
+                h("span", { class: "tag", text: "Skipped for now" }),
             ),
             h("div", {
               class: "where",
@@ -1003,45 +1057,7 @@
               pickers((files) => addFiles(files, shot.id, shot.project)),
             ),
             thumbs(shot.id),
-            h(
-              "div",
-              { class: "nav" },
-              isSkipped(shot)
-                ? h(
-                    "button",
-                    { type: "button", onclick: () => skip(shot, false) },
-                    "Unskip",
-                  )
-                : h(
-                    "button",
-                    {
-                      type: "button",
-                      disabled: isDone(shot),
-                      onclick: () => {
-                        current = nextOpen(shot.id)?.id ?? null;
-                        skip(shot, true);
-                      },
-                    },
-                    "Skip",
-                  ),
-              h(
-                "button",
-                {
-                  type: "button",
-                  class: "next",
-                  onclick: () => {
-                    const n = nextOpen(shot.id);
-                    if (n) {
-                      place = n.where;
-                      current = n.id;
-                    } else current = null;
-                    render();
-                    scrollTo({ top: 0, behavior: "smooth" });
-                  },
-                },
-                "Next →",
-              ),
-            ),
+            h("div", { class: "nav" }, ...navButtons(shot)),
           ),
         );
       }
@@ -1102,7 +1118,7 @@
                       "button",
                       {
                         type: "button",
-                        class: `item${isDone(s) ? " done" : ""}${isSkipped(s) ? " skipped" : ""}`,
+                        class: `item${isDone(s) ? " done" : ""}${isSkipped(s) ? " skipped" : ""}${isLater(s) ? " later" : ""}`,
                         onclick: () => {
                           place = s.where;
                           current = s.id;
@@ -1111,7 +1127,13 @@
                       },
                       h("span", {
                         class: "tick",
-                        text: isDone(s) ? "✓" : isSkipped(s) ? "–" : "",
+                        text: isDone(s)
+                          ? "✓"
+                          : isSkipped(s)
+                            ? "–"
+                            : isLater(s)
+                              ? "…"
+                              : "",
                       }),
                       h(
                         "span",
@@ -1120,7 +1142,8 @@
                           class: "p",
                           text:
                             projectName(s.project) +
-                            (s.optional ? " · optional" : ""),
+                            (s.optional ? " · optional" : "") +
+                            (isLater(s) ? " · skipped for now" : ""),
                         }),
                         h("span", { class: "t", text: s.title }),
                       ),

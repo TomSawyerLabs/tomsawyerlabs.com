@@ -122,7 +122,7 @@ test("skipping a shot moves on, and it can be unskipped", async ({ page }) => {
   await page.getByRole("button", { name: new RegExp(shot.title) }).click();
   await expect(page.locator(".shot-title")).toHaveText(shot.title);
 
-  await page.getByRole("button", { name: "Skip" }).click();
+  await page.getByRole("button", { name: "Skip for good" }).click();
   await expect.poll(async () => (await api(page)).skipped).toContain(shot.id);
   await expect(page.locator(".shot-title")).not.toHaveText(shot.title);
 
@@ -132,4 +132,24 @@ test("skipping a shot moves on, and it can be unskipped", async ({ page }) => {
   await expect
     .poll(async () => (await api(page)).skipped)
     .not.toContain(shot.id);
+});
+
+test("skip for now comes back after everything else", async ({ page }) => {
+  // Shots of their own: the other tests photograph the first open one.
+  await open(page, tester());
+  await page.getByRole("button", { name: "List" }).click();
+  await page.getByRole("button", { name: /A hut folded flat/ }).click();
+  await page.getByRole("button", { name: "Skip for now →" }).click();
+  await expect(page.locator(".shot-title")).toHaveText("Inside a hut");
+  await expect(page.locator(".shot-title")).not.toHaveText(/folded flat/);
+
+  // Not skipped on the server: it's this phone's "later", nothing more.
+  expect((await api(page)).skipped).not.toContain("hyparhuts-setup");
+
+  // Remembered across a reload, and marked in the list.
+  await page.reload();
+  await page.getByRole("button", { name: "List" }).click();
+  await expect(
+    page.getByRole("button", { name: /A hut folded flat/ }),
+  ).toContainText("skipped for now");
 });

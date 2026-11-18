@@ -65,7 +65,7 @@ TWILL site.
   shows that Claude is watching. Claude's own replies aren't sent.
 - **Shot list:** `http://<LAN IP>:<port>/__shots?name=Name` is a phone page
   for taking the site's photos. It walks you place by place through the
-  shots in `review/shots.ts` (edit that to change the list), files each
+  shots in `review/shots.ts` (edit that to change the list), lets you skip a shot for now (it comes back last) or for good, files each
   photo against its shot or as an extra for any project, and keeps photos on
   the phone until they've uploaded. Photos land in `review/uploads/`, the
   filing in `review/shots.json` (gitignored); `bun run shots` lists them
