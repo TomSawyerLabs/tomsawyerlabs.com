@@ -1,7 +1,7 @@
 name: CI
 
-# Deployment is handled by Cloudflare Pages (a git-connected build on push to
-# master; see "Deployment" in the README). This workflow just keeps the code
+# Deployment is handled by Cloudflare Workers Builds (a git-connected build;
+# see "Deployment" in the README). This workflow just keeps the code
 # honest.
 
 on:

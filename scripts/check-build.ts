@@ -1,5 +1,5 @@
 // Checks the static build for what the host needs: a top-level 404.html
-// holding the not-found page, which Cloudflare Pages serves with a 404 status
+// holding the not-found page, which Cloudflare Workers static assets serve with a 404 status
 // for unknown paths. Runs after `react-router build`, so a broken build fails
 // before it deploys a site whose every unknown path is a soft 404.
 

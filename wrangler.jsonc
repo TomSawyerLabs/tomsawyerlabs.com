@@ -1,0 +1,18 @@
+// Cloudflare Workers static assets. There's no Worker script: every request is
+// a file from build/client. Workers Builds deploys the production branch and
+// uploads every other branch as a preview version with its own
+// *.workers.dev preview URL.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tomsawyerlabs-com",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./build/client",
+    // Unknown paths get build/client/404.html with a real 404 status.
+    "not_found_handling": "404-page",
+    // /hil-runner serves /hil-runner/index.html; /hil-runner/ redirects to it.
+    "html_handling": "drop-trailing-slash",
+  },
+  "preview_urls": true,
+  "workers_dev": true,
+}

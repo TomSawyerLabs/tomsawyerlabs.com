@@ -2,7 +2,7 @@
 
 The public site for [Tom Sawyer Labs](https://tomsawyerlabs.com), the
 open-source and public-benefit side of [TWILL Technology](https://twilltech.com).
-A static site (React Router SSG) hosted on Cloudflare Pages.
+A static site (React Router SSG) served as Cloudflare Workers static assets.
 
 The home page opens on Tom Sawyer's fence with our name painted on it. As you
 scroll, the fence shrinks into the top bar and the projects come up underneath.
@@ -93,5 +93,15 @@ PORT=5193 bun run test   # if something else already has port 5173
 
 ## Deployment
 
-Cloudflare Pages builds and deploys `master`. The GitHub Actions workflow only
+Cloudflare Workers Builds builds the `tomsawyerlabs-com` Worker (static
+assets only, `wrangler.jsonc`) with `bun run build` and deploys it with
+`bunx wrangler deploy`. Until launch the production branch is `fence-site`,
+served at [next.tomsawyerlabs.com](https://next.tomsawyerlabs.com) with
+`X-Robots-Tag: noindex` (`public/_headers`); every other branch gets a
+`*.workers.dev` preview URL. tomsawyerlabs.com itself still comes from the old
+Cloudflare Pages project until it moves over. The GitHub Actions workflow only
 checks formatting, types, tests and the build.
+
+```bash
+bun run build && bun run preview   # the built site under wrangler dev
+```
