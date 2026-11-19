@@ -207,6 +207,13 @@ Out:
   learned to create it. Playwright also empties `test-results/` at the start
   of a run, so test review data lives in the OS temp folder instead.
 
+- Workers Builds (2026-11-19): the first build of `fence-site` ran deploy
+  command `npx wrangler preview` and failed ("missing a `previews` block").
+  The Builds API listed one trigger, branch `fence-site`, deploy
+  `npx wrangler preview`, while the dashboard's Production tab showed branch
+  `fence-site` and `bunx wrangler deploy`. The dashboard now has a
+  "Previews Base" tab next to Production (Workers previews, open beta).
+
 ## Things not to do
 
 - Don't build on the June showcase branch; Cameron chose to start fresh.
