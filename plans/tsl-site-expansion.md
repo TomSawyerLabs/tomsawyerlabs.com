@@ -115,17 +115,20 @@ counter, Empyrean Gate, the HIL runner and clearance.
        `ce32e66`: `wrangler.jsonc` (Worker `tomsawyerlabs-com`, assets only),
        `public/_headers` noindex, `bun run preview` = wrangler dev (checked:
        pages 200, `/x/` 307 to `/x`, unknown 404 with the 404 page, noindex
-       header). Remaining, each needs Cameron's yes, one at a time:
-       (1) [x] ops `9d50620a`, applied by ops CI run 44605039726 (2026-11-19): `next.tomsawyerlabs.com` -> empty Worker `tomsawyerlabs-com`; (2) push `fence-site` to origin;
-       (3) connect Workers Builds (production branch `fence-site` until launch,
-       build `bun run build`, deploy `bunx wrangler deploy`, `BUN_VERSION`
-       1.4.4); (4) at launch: move the apex and www to the Worker, switch the
-       build branch to `master`, retire the Pages project, drop the noindex.
+       header). Steps, each with Cameron's yes: - [x] ops `9d50620a` (CI run 44605039726, 2026-11-19):
+       `next.tomsawyerlabs.com` -> Worker `tomsawyerlabs-com`. - [x] `fence-site` pushed to origin (2026-11-19). - [x] Workers Builds connected by Cameron (2026-11-19): branch
+       `fence-site`, build `bun run build`, deploy `bunx wrangler deploy`,
+       previews on, `BUN_VERSION` 1.4.4. - [ ] First build and check of next.tomsawyerlabs.com. - [ ] Launch, see step 8.
        Locally `bun add` still fails on the ui github tarball (TLS); wrangler
        was added by taking ui out of package.json for the add and restoring
        its lock entry by hand.
-8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes,
-       and not before the photos are in (Cameron, 2026-11-15).
+8. [ ] Launch. Needs Cameron's yes, and not before the photos are in
+       (Cameron, 2026-11-15). In order: (a) merge `fence-site` into
+       `master` and push (still deploys the new site to Pages too, harmless);
+       (b) Workers Builds production branch -> `master` (Cameron, dashboard);
+       (c) remove the noindex rule in `public/_headers`, push; (d) ops: move
+       `tomsawyerlabs.com` and `www` from `pages:` to the Worker, keep `next.`
+       as an alias or drop it, apply; (e) ops: retire the Pages project.
 
 ## Open questions for Cameron
 
