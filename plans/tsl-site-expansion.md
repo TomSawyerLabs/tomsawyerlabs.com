@@ -109,17 +109,24 @@ counter, Empyrean Gate, the HIL runner and clearance.
        `review/shots.ts`; `bun run shots` shows what's in and where the files
        are. Then place them on the pages. (The earlier Claude Doc version,
        https://claude.ai/artifact/4b2seKYHTSnvDuhTj3a5Bu, is superseded.)
-       7a. [ ] **Current:** preview at `next.tomsawyerlabs.com` (Cameron asked,
-       2026-11-18). Proposed, waiting on his yes for each part: (1) push
-       `fence-site` to origin as branch `next`, so Pages builds it at
-       `next.tomsawyerlabs-com.pages.dev`; (2) a `_headers` rule sending
-       `X-Robots-Tag: noindex` on the next host; (3) ops: teach the Pages
-       handler a per-domain `branch:` (custom domain on the project, CNAME to
-       `<branch>.<project>.pages.dev`), then add `next.tomsawyerlabs.com` in
-       `cloudflare/config/isozilla/tomsawyerlabs.yaml` and apply. The ops
-       handler today only points custom domains at production
-       (`cloudflare/src/expand/handlers/pages.ts`). next.twilltech.com is a
-       Worker (ops `592ca33e`), so it isn't a template for this.
+       7a. [ ] **Current:** preview at `next.tomsawyerlabs.com`, hosted on a
+       Cloudflare Worker like the TWILL site (Cameron, 2026-11-18: "switch to
+       CF workers for tsl hosting too"; Pages is dropped). Repo side done in
+       `ce32e66`: `wrangler.jsonc` (Worker `tomsawyerlabs-com`, assets only),
+       `public/_headers` noindex, `bun run preview` = wrangler dev (checked:
+       pages 200, `/x/` 307 to `/x`, unknown 404 with the 404 page, noindex
+       header). Remaining, each needs Cameron's yes, one at a time:
+       (1) ops: `next.tomsawyerlabs.com` -> `worker: {name: tomsawyerlabs-com,
+       external: true, provision: true}` in
+       `cloudflare/config/isozilla/tomsawyerlabs.yaml`, then apply (same shape
+       as next.twilltech.com, ops `592ca33e`); (2) push `fence-site` to origin;
+       (3) connect Workers Builds (production branch `fence-site` until launch,
+       build `bun run build`, deploy `bunx wrangler deploy`, `BUN_VERSION`
+       1.4.4); (4) at launch: move the apex and www to the Worker, switch the
+       build branch to `master`, retire the Pages project, drop the noindex.
+       Locally `bun add` still fails on the ui github tarball (TLS); wrangler
+       was added by taking ui out of package.json for the add and restoring
+       its lock entry by hand.
 8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes,
        and not before the photos are in (Cameron, 2026-11-15).
 
