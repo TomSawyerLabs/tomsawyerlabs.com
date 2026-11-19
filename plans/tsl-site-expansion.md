@@ -116,10 +116,7 @@ counter, Empyrean Gate, the HIL runner and clearance.
        `public/_headers` noindex, `bun run preview` = wrangler dev (checked:
        pages 200, `/x/` 307 to `/x`, unknown 404 with the 404 page, noindex
        header). Remaining, each needs Cameron's yes, one at a time:
-       (1) ops: `next.tomsawyerlabs.com` -> `worker: {name: tomsawyerlabs-com,
-       external: true, provision: true}` in
-       `cloudflare/config/isozilla/tomsawyerlabs.yaml`, then apply (same shape
-       as next.twilltech.com, ops `592ca33e`); (2) push `fence-site` to origin;
+       (1) [x] ops `9d50620a`, applied by ops CI run 44605039726 (2026-11-19): `next.tomsawyerlabs.com` -> empty Worker `tomsawyerlabs-com`; (2) push `fence-site` to origin;
        (3) connect Workers Builds (production branch `fence-site` until launch,
        build `bun run build`, deploy `bunx wrangler deploy`, `BUN_VERSION`
        1.4.4); (4) at launch: move the apex and www to the Worker, switch the
