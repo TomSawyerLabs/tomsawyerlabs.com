@@ -109,6 +109,17 @@ counter, Empyrean Gate, the HIL runner and clearance.
        `review/shots.ts`; `bun run shots` shows what's in and where the files
        are. Then place them on the pages. (The earlier Claude Doc version,
        https://claude.ai/artifact/4b2seKYHTSnvDuhTj3a5Bu, is superseded.)
+       7a. [ ] **Current:** preview at `next.tomsawyerlabs.com` (Cameron asked,
+       2026-11-18). Proposed, waiting on his yes for each part: (1) push
+       `fence-site` to origin as branch `next`, so Pages builds it at
+       `next.tomsawyerlabs-com.pages.dev`; (2) a `_headers` rule sending
+       `X-Robots-Tag: noindex` on the next host; (3) ops: teach the Pages
+       handler a per-domain `branch:` (custom domain on the project, CNAME to
+       `<branch>.<project>.pages.dev`), then add `next.tomsawyerlabs.com` in
+       `cloudflare/config/isozilla/tomsawyerlabs.yaml` and apply. The ops
+       handler today only points custom domains at production
+       (`cloudflare/src/expand/handlers/pages.ts`). next.twilltech.com is a
+       Worker (ops `592ca33e`), so it isn't a template for this.
 8. [ ] Merge to master (deploys via Cloudflare Pages). Needs Cameron's yes,
        and not before the photos are in (Cameron, 2026-11-15).
 
