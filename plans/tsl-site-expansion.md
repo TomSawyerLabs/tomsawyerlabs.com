@@ -220,7 +220,11 @@ Out:
   frames: ~140 s raster, 227 paints, p50 frame 150 ms). Now transforms and
   opacity only: the header slides up behind its own clip while its stage
   slides back down, and the logo's halo is a pre-blurred copy that fades in
-  (0.2 s raster, 5 paints, p50 16.8 ms). Measure with
+  (0.2 s raster, 5 paints, p50 16.8 ms). Then moved to CSS scroll-driven
+  animations (`fence-*` in `fence.css`, sizes as CSS vars, length ratios via
+  `tan(atan2(a, b))`), so Chrome and Safari need no scroll JS at all; Firefox
+  (no `animation-timeline` yet) gets the same paused animations scrubbed from
+  a scroll listener in `Fence.tsx`. Measure with
   `bun run perf:scroll <url> [light|dark]`. Don't animate the fence's
   height, `--p`-driven CSS, or a filter radius per frame again.
 - `tests/review.spec.ts` "server is down", "answer is lost" and "half-written

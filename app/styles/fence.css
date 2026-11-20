@@ -2,8 +2,8 @@
 
 .fence {
   --bar-h: 76px;
-  /* 0 = full hero, 1 = top bar. Static: with JS, Fence.tsx animates the
-     shrink with transforms alone and leaves this at 0. */
+  /* 0 = full hero, 1 = top bar. Static: the shrink is the fence-*
+     animations below, which only move layers and never touch this. */
   --p: 1;
   --picket-w: clamp(44px, 4.6vw, 64px);
   --picket-gap: clamp(7px, 0.8vw, 11px);
@@ -28,13 +28,143 @@
 }
 
 /* With JS: pin the hero and let it shrink; the spacer keeps the page's
-   content starting below the first screen. Fence.tsx slides the header up
-   and its stage back down, so only the clip moves (see the comment there);
-   these layers are promoted so that never repaints. */
+   content starting below the first screen. */
 .js .fence[data-hero] {
   position: fixed;
   inset: 0 0 auto 0;
+
+  /* How far you scroll to shrink it, and the sizes the shrink runs between.
+     tan(atan2(a, b)) is a / b for two lengths, as a plain number. */
+  --range: calc(100svh - var(--bar-h));
+  --rails-h0: calc(100svh - var(--sky-h) - var(--tip));
+  --rails-h1: calc(var(--bar-h) - var(--tip));
+  --rail-scale: tan(
+    atan2(
+      clamp(10px, var(--rails-h1) * 0.07, 34px),
+      clamp(10px, var(--rails-h0) * 0.07, 34px)
+    )
+  );
+  --brand-w: min(74vw, 58svh * 1.3125, 760px);
+  --brand-scale: tan(
+    atan2(calc(var(--bar-h) - 14px), calc(var(--brand-w) / 1.3125))
+  );
 }
+
+/* The shrink. Every step only moves or fades a layer, so nothing is laid
+   out or repainted while you scroll: the pickets' noise textures and the
+   logo's halo are rasterized once. The header slides up behind its own
+   overflow clip while its stage slides back down by the same amount, so the
+   scene stays put and the clip's bottom edge rises. Where the browser has
+   scroll-driven animations these run on the compositor off the scroll
+   position; elsewhere Fence.tsx scrubs them from a scroll listener. */
+.js .fence[data-hero] {
+  animation: fence-slide 1s linear both paused;
+}
+.js .fence[data-hero] .fence__stage {
+  animation: fence-unslide 1s linear both paused;
+  container-type: inline-size;
+}
+.js .fence[data-hero] :is(.fence__pickets, .fence__rails) {
+  animation: fence-rise 1s linear both paused;
+}
+.js .fence[data-hero] .fence__rails span {
+  animation: fence-rail 1s linear both paused;
+}
+.js .fence[data-hero] .fence__brand {
+  animation: fence-brand 1s linear both paused;
+}
+.js .fence[data-hero] .fence__halo {
+  animation: fence-show 1s linear both paused;
+}
+.js .fence[data-hero] :is(.fence__tagline, .fence__more) {
+  animation: fence-hide 1s linear both paused;
+}
+.js .fence[data-hero] .fence__nav {
+  animation: fence-nav 1s linear both paused;
+}
+
+@supports (animation-timeline: scroll()) {
+  .js .fence[data-hero],
+  .js
+    .fence[data-hero]
+    :is(
+      .fence__stage,
+      .fence__pickets,
+      .fence__rails,
+      .fence__rails span,
+      .fence__brand,
+      .fence__halo,
+      .fence__tagline,
+      .fence__more,
+      .fence__nav
+    ) {
+    animation-duration: auto;
+    animation-play-state: running;
+    animation-timeline: scroll(root);
+    animation-range: 0 var(--range);
+  }
+}
+
+@keyframes fence-slide {
+  to {
+    transform: translateY(calc(-1 * var(--range)));
+  }
+}
+@keyframes fence-unslide {
+  to {
+    transform: translateY(var(--range));
+  }
+}
+/* The pickets rise into the sky's place. */
+@keyframes fence-rise {
+  to {
+    transform: translateY(calc(-1 * var(--sky-h)));
+  }
+}
+/* The rails keep their place on the pickets as the fence gets shorter. */
+@keyframes fence-rail {
+  to {
+    transform: translateY(
+        calc(var(--frac) * (var(--rails-h1) - var(--rails-h0)))
+      )
+      scaleY(var(--rail-scale));
+  }
+}
+/* The name shrinks into the bar's left corner, its height the bar's less a
+   margin. */
+@keyframes fence-brand {
+  to {
+    transform: translate(
+        calc(1rem + var(--brand-w) * var(--brand-scale) / 2 - 50cqw),
+        calc(var(--bar-h) / 2 + 4px - var(--sky-h) - 34svh)
+      )
+      scale(var(--brand-scale));
+  }
+}
+@keyframes fence-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fence-hide {
+  from {
+    opacity: 1;
+  }
+  33.3%,
+  to {
+    opacity: 0;
+  }
+}
+/* Down onto the pickets once the sky above them is gone. */
+@keyframes fence-nav {
+  to {
+    transform: translateY(4px);
+  }
+}
+
 .js .fence[data-hero],
 .js .fence[data-hero] .fence__stage,
 .js .fence[data-hero] .fence__pickets,
@@ -91,10 +221,13 @@
   box-shadow: 0 3px 4px -2px rgb(0 0 0 / 0.35);
 }
 .fence__rails span:first-child {
-  top: 18%;
+  --frac: 0.18;
 }
 .fence__rails span:last-child {
-  top: 74%;
+  --frac: 0.74;
+}
+.fence__rails span {
+  top: calc(var(--frac) * 100%);
 }
 
 .fence__pickets {
@@ -174,8 +307,8 @@
   }
 }
 
-/* The painted name. Laid out at full hero size, centered; Fence.tsx
-   transforms it into the bar's corner as you scroll. Units are svh (not %)
+/* The painted name. Laid out at full hero size, centered; the fence-brand
+   animation moves it into the bar's corner as you scroll. Units are svh (not %)
    so its untransformed box doesn't move as the header shrinks. */
 .fence__brand {
   position: absolute;
@@ -207,7 +340,7 @@
 /* In the bar the logo straddles the gaps between pickets, where dark paint
    would vanish against a night sky; a whitewash halo keeps it whole. On the
    home page the halo is a second, whitewash-coloured copy behind the logo
-   that Fence.tsx fades in as it shrinks (a fixed filter, so it's rasterized
+   that fades in as it shrinks (a fixed filter, so it's rasterized
    once). The hero logo is scaled down ~8x by then, hence the large blur. */
 .fence__logo.fence__halo {
   position: absolute;
@@ -241,10 +374,6 @@
   translate: -50% 0;
   text-align: center;
   opacity: clamp(0, 1 - var(--p) * 3, 1);
-  pointer-events: none;
-}
-.fence[data-hero]:not([data-collapsed]) .fence__more {
-  pointer-events: auto;
 }
 
 .fence__tagline {
@@ -317,7 +446,8 @@
   font-family: var(--font-paint);
   font-size: clamp(0.95rem, 1.6vw, 1.2rem);
 }
-.fence[data-hero]:not([data-collapsed]) .fence__nav {
+/* The home page's nav starts in the sky and fence-nav lowers it. */
+.fence[data-hero] .fence__nav {
   top: calc(var(--bar-h) / 2);
 }
 .fence__nav a {

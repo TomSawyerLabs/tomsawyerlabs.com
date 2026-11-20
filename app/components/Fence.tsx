@@ -34,103 +34,32 @@ function paintOf(i: number): "full" | "partial" | "bare" {
 export function Fence({ hero = false }: { hero?: boolean }) {
   const ref = useRef<HTMLElement>(null);
 
-  // The shrink only ever changes transforms and opacity, so scrolling never
-  // re-lays-out or repaints the fence: the pickets' noise textures and the
-  // logo's halo are rasterized once and the compositor moves them. Resizing
-  // the header instead (the obvious way) re-rasterized every picket on
-  // every frame.
-  //
-  // The header keeps its full height and slides up (translateY(-y)), so its
-  // overflow clip is what makes it look shorter; the stage inside slides
-  // back down by the same amount, so the scene stays put while the clip's
-  // bottom edge rises.
+  // The shrink is the fence-* CSS animations in fence.css, driven by the
+  // scroll position where the browser supports scroll-driven animations.
+  // Elsewhere, scrub them from here: they're paused 1s animations, so
+  // seeking them to `progress` seconds is the same thing.
   useEffect(() => {
     const el = ref.current;
-    if (!hero || !el) return;
-    const q = <T extends HTMLElement>(s: string) => el.querySelector<T>(s)!;
-    const stage = q(".fence__stage");
-    const brand = q(".fence__brand");
-    const halo = q(".fence__halo");
-    const pickets = q(".fence__pickets");
-    const railBox = q(".fence__rails");
-    const rails = Array.from(railBox.children) as HTMLElement[];
-    const fading = [q(".fence__tagline"), q(".fence__more")];
+    if (!hero || !el || CSS.supports("animation-timeline: scroll()")) return;
 
+    const anims = el
+      .getAnimations({ subtree: true })
+      .filter(
+        (a): a is CSSAnimation =>
+          a instanceof CSSAnimation && a.animationName.startsWith("fence-"),
+      );
+    let range = 1;
     let frame = 0;
-    let collapsed: boolean | null = null;
-    // Measured once per resize; nothing is read back while scrolling.
-    let m = {
-      full: 0, // header height (100svh)
-      bar: 0,
-      sky: 0, // sky above the pickets in the hero
-      railsH: 0, // the rails' box height in the hero
-      rails: [] as { frac: number; h: number }[],
-      brand: { x: 0, y: 0, scale: 1 },
-    };
-
-    const railHeight = (box: number) => Math.min(Math.max(box * 0.07, 10), 34);
 
     const measure = () => {
-      el.style.transform = stage.style.transform = brand.style.transform = "";
-      for (const r of [pickets, railBox, ...rails]) r.style.transform = "";
-      const cs = getComputedStyle(el);
-      const full = el.offsetHeight;
-      const bar = parseFloat(cs.getPropertyValue("--bar-h"));
-      const railsH = railBox.offsetHeight;
-      const base = brand.getBoundingClientRect();
-      const scale = (bar - 14) / base.height;
-      const inset = parseFloat(cs.fontSize); // 1rem-ish
-      m = {
-        full,
-        bar,
-        sky: pickets.offsetTop,
-        railsH,
-        rails: rails.map((r) => ({
-          frac: r.offsetTop / railsH,
-          h: railHeight(railsH),
-        })),
-        brand: {
-          scale,
-          x: inset + (base.width * scale) / 2 - (base.left + base.width / 2),
-          y: bar / 2 + 4 - (base.top + base.height / 2),
-        },
-      };
+      const bar = parseFloat(getComputedStyle(el).getPropertyValue("--bar-h"));
+      range = Math.max(1, el.offsetHeight - bar);
     };
-
     const update = () => {
       frame = 0;
-      const range = Math.max(1, m.full - m.bar);
-      const y = Math.min(Math.max(window.scrollY, 0), range);
-      const p = y / range;
-
-      el.style.transform = `translateY(${-y}px)`;
-      stage.style.transform = `translateY(${y}px)`;
-
-      // The pickets rise to fill the sky's place.
-      const rise = `translateY(${-m.sky * p}px)`;
-      pickets.style.transform = rise;
-      railBox.style.transform = rise;
-      // The rails stay at the same fraction of the visible fence's height.
-      const railsH = m.railsH - y + m.sky * p;
-      rails.forEach((r, i) => {
-        const { frac, h } = m.rails[i];
-        const shift = frac * (railsH - m.railsH);
-        r.style.transform = `translateY(${shift}px) scaleY(${railHeight(railsH) / h})`;
-      });
-
-      const b = m.brand;
-      const s = 1 + (b.scale - 1) * p;
-      brand.style.transform = `translate(${b.x * p}px, ${b.y * p}px) scale(${s})`;
-      halo.style.opacity = p.toFixed(3);
-      const fade = Math.min(Math.max(1 - p * 3, 0), 1).toFixed(3);
-      for (const f of fading) f.style.opacity = fade;
-
-      if (collapsed !== p >= 1) {
-        collapsed = p >= 1;
-        el.toggleAttribute("data-collapsed", collapsed);
-      }
+      const p = Math.min(Math.max(window.scrollY / range, 0), 1);
+      for (const a of anims) a.currentTime = p * 1000;
     };
-
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
@@ -139,14 +68,10 @@ export function Fence({ hero = false }: { hero?: boolean }) {
       update();
     };
 
-    let live = true;
     onResize();
-    // A late webfont can move things after the first measure.
-    document.fonts?.ready.then(() => live && onResize());
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
-      live = false;
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", onResize);

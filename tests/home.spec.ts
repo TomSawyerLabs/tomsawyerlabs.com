@@ -26,11 +26,20 @@ test.describe("Home page", () => {
     expect(tall).toBeGreaterThan(400);
 
     await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2));
-    await expect(fence).toHaveAttribute("data-collapsed", "");
     // It slides up behind its own clip rather than resizing, so what's left
     // on screen is the part above its bottom edge.
-    const bar = (await fence.boundingBox())!;
-    expect(bar.y + bar.height).toBeLessThan(100);
+    await expect
+      .poll(async () => {
+        const bar = (await fence.boundingBox())!;
+        return bar.y + bar.height;
+      })
+      .toBeLessThan(100);
+
+    // The name ends up in the bar's left corner.
+    const brand = (await page.locator(".fence__brand").boundingBox())!;
+    expect(brand.x).toBeLessThan(40);
+    expect(brand.y).toBeGreaterThanOrEqual(0);
+    expect(brand.y + brand.height).toBeLessThan(80);
   });
 
   test("lists projects that link to their pages", async ({ page }) => {
