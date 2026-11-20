@@ -10,6 +10,7 @@
     "review": "bun scripts/review.ts",
     "review:watch": "bun scripts/review-watch.ts",
     "shots": "bun scripts/shots.ts",
+    "perf:scroll": "bun scripts/perf-scroll.ts",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "fmt": "oxfmt --write .",

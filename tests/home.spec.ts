@@ -27,7 +27,10 @@ test.describe("Home page", () => {
 
     await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2));
     await expect(fence).toHaveAttribute("data-collapsed", "");
-    expect((await fence.boundingBox())!.height).toBeLessThan(100);
+    // It slides up behind its own clip rather than resizing, so what's left
+    // on screen is the part above its bottom edge.
+    const bar = (await fence.boundingBox())!;
+    expect(bar.y + bar.height).toBeLessThan(100);
   });
 
   test("lists projects that link to their pages", async ({ page }) => {

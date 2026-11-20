@@ -214,6 +214,18 @@ Out:
   `fence-site` and `bunx wrangler deploy`. The dashboard now has a
   "Previews Base" tab next to Production (Workers previews, open beta).
 
+- Fence scroll performance (2026-11-20): shrinking the hero by setting its
+  height each frame re-rasterized all 44 noise-textured pickets plus an
+  animated drop-shadow blur on the logo every frame (headless Chrome, 240
+  frames: ~140 s raster, 227 paints, p50 frame 150 ms). Now transforms and
+  opacity only: the header slides up behind its own clip while its stage
+  slides back down, and the logo's halo is a pre-blurred copy that fades in
+  (0.2 s raster, 5 paints, p50 16.8 ms). Measure with
+  `bun run perf:scroll <url> [light|dark]`. Don't animate the fence's
+  height, `--p`-driven CSS, or a filter radius per frame again.
+- `tests/review.spec.ts` "server is down", "answer is lost" and "half-written
+  comment" fail on a clean checkout too (2026-11-20), not from the fence work.
+
 ## Things not to do
 
 - Don't build on the June showcase branch; Cameron chose to start fresh.

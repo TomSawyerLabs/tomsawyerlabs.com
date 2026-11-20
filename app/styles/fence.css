@@ -2,7 +2,9 @@
 
 .fence {
   --bar-h: 76px;
-  --p: 1; /* 0 = full hero, 1 = top bar. Set by Fence.tsx while scrolling. */
+  /* 0 = full hero, 1 = top bar. Static: with JS, Fence.tsx animates the
+     shrink with transforms alone and leaves this at 0. */
+  --p: 1;
   --picket-w: clamp(44px, 4.6vw, 64px);
   --picket-gap: clamp(7px, 0.8vw, 11px);
   --tip: clamp(16px, 1.6vw, 22px);
@@ -26,10 +28,29 @@
 }
 
 /* With JS: pin the hero and let it shrink; the spacer keeps the page's
-   content starting below the first screen. */
+   content starting below the first screen. Fence.tsx slides the header up
+   and its stage back down, so only the clip moves (see the comment there);
+   these layers are promoted so that never repaints. */
 .js .fence[data-hero] {
   position: fixed;
   inset: 0 0 auto 0;
+}
+.js .fence[data-hero],
+.js .fence[data-hero] .fence__stage,
+.js .fence[data-hero] .fence__pickets,
+.js .fence[data-hero] .fence__rails,
+.js .fence[data-hero] .fence__rails span {
+  will-change: transform;
+}
+.js .fence__tagline,
+.js .fence__more,
+.fence__halo {
+  will-change: opacity;
+}
+
+.fence__stage {
+  position: absolute;
+  inset: 0;
 }
 .fence-spacer {
   display: none;
@@ -56,6 +77,7 @@
 }
 .fence__rails span {
   position: absolute;
+  transform-origin: top;
   left: 0;
   right: 0;
   height: clamp(10px, 7%, 34px);
@@ -168,6 +190,7 @@
   will-change: transform;
 }
 .fence__brand a {
+  position: relative;
   display: block;
   color: inherit;
 }
@@ -182,11 +205,21 @@
 }
 
 /* In the bar the logo straddles the gaps between pickets, where dark paint
-   would vanish against a night sky; a whitewash halo keeps it whole. The
-   hero logo is scaled down ~8x by then, hence the large blur. */
-.fence[data-hero] .fence__logo svg {
-  filter: drop-shadow(0 0 calc(var(--p) * 16px) var(--wash-solid))
-    drop-shadow(0 0 calc(var(--p) * 10px) var(--wash-solid));
+   would vanish against a night sky; a whitewash halo keeps it whole. On the
+   home page the halo is a second, whitewash-coloured copy behind the logo
+   that Fence.tsx fades in as it shrinks (a fixed filter, so it's rasterized
+   once). The hero logo is scaled down ~8x by then, hence the large blur. */
+.fence__logo.fence__halo {
+  position: absolute;
+  inset: 0;
+  color: var(--wash-solid);
+  opacity: 0;
+  pointer-events: none;
+}
+.fence__logo.fence__halo svg {
+  filter: drop-shadow(0 0 16px var(--wash-solid))
+    drop-shadow(0 0 10px var(--wash-solid));
+  opacity: 1;
 }
 .fence:not([data-hero]) .fence__logo svg {
   filter: drop-shadow(0 0 2px var(--wash-solid))
@@ -224,7 +257,13 @@
   font-size: clamp(1.25rem, 3.2vw, 2.1rem);
   line-height: 1.25;
   color: var(--paint);
-  opacity: calc(clamp(0, 1 - var(--p) * 3, 1) * 0.9);
+  /* The line crosses the dark gaps between pickets; a whitewash halo keeps
+     every letter on a light ground (worst at night). */
+  text-shadow:
+    0 0 0.08em var(--wash-solid),
+    0 0 0.18em var(--wash-solid),
+    0 0 0.35em var(--wash-solid),
+    0 0 0.6em var(--wash-solid);
 }
 
 .fence__more {
@@ -241,6 +280,7 @@
   color: var(--paint);
   text-decoration: none;
   border-radius: 999px;
+  background: color-mix(in srgb, var(--wash-solid) 85%, transparent);
 }
 .fence__more svg {
   width: 1.4rem;
