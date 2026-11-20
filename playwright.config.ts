@@ -37,7 +37,10 @@ export default defineConfig({
   webServer: {
     command: `bun run dev --port ${port} --strictPort`,
     url: `http://localhost:${port}`,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a running server: it may be the live review server (whose
+    // comments and webhook are real) or another project's dev server. A busy
+    // port fails the run instead; pick another with PORT.
+    reuseExistingServer: false,
     // Review comments from the tests go to a scratch folder, never to
     // review/comments.json or the webhook.
     env: { REVIEW_DIR: REVIEW_TEST_DIR },
