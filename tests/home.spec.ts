@@ -64,6 +64,53 @@ test.describe("Home page", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("pFMS");
   });
 
+  test("the logo still draws after client-side navigation", async ({
+    page,
+    browserName,
+  }) => {
+    // The logo's paths are server-rendered only (app/components/Logo.tsx),
+    // so a client-side page change must keep them. Returns the drawn logo's
+    // width, or 0 if it's missing or (not in Firefox) spills out of its box.
+    // Firefox draws it right but sometimes reports a <use>'s client rect
+    // without the symbol's viewBox offset, so there only the width counts.
+    const drawn = () =>
+      page
+        .locator(".fence__brand .fence__logo svg")
+        .last()
+        .evaluate((svg, checkBox) => {
+          const box = svg.getBoundingClientRect();
+          const ink = svg.querySelector("use")!.getBoundingClientRect();
+          const inside =
+            ink.left >= box.left - 1 &&
+            ink.top >= box.top - 1 &&
+            ink.right <= box.right + 1 &&
+            ink.bottom <= box.bottom + 1;
+          return inside || !checkBox ? ink.width : 0;
+        }, browserName !== "firefox");
+    const card = page.getByRole("link", { name: /pFMS/ }).first();
+
+    await expect.poll(drawn).toBeGreaterThan(0);
+    // Hydrated once React has attached itself to the card's link.
+    await expect
+      .poll(() =>
+        card.evaluate((a) =>
+          Object.keys(a).some((k) => k.startsWith("__reactFiber")),
+        ),
+      )
+      .toBe(true);
+    await page.evaluate(() => ((window as any).__samePage = true));
+
+    await card.click();
+    await expect(page).toHaveURL(/\/pfms$/);
+    expect(await page.evaluate(() => (window as any).__samePage)).toBe(true);
+    await expect.poll(drawn).toBeGreaterThan(0);
+
+    await page.getByRole("link", { name: "Tom Sawyer Labs, home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    expect(await page.evaluate(() => (window as any).__samePage)).toBe(true);
+    await expect.poll(drawn).toBeGreaterThan(0);
+  });
+
   test("never uses title= tooltips", async ({ page }) => {
     await expect(page.locator("[title]")).toHaveCount(0);
   });

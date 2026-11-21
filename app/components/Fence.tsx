@@ -1,6 +1,6 @@
-import { Logo } from "@tomsawyerlabs/ui";
 import { useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router";
+import { Logo } from "./Logo";
 
 // Tom Sawyer's fence. On the home page it fills the first screen with our
 // name painted on it, then shrinks into the top bar as you scroll. Every

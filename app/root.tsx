@@ -10,6 +10,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 import { GradientGlow } from "./components/GradientGlow";
+import { LogoSprite } from "./components/Logo";
 import "@fontsource-variable/inter/index.css";
 import "@fontsource-variable/jetbrains-mono/index.css";
 import "@fontsource/permanent-marker/index.css";
@@ -114,6 +115,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <LogoSprite />
         <GradientGlow />
         {children}
         <footer className="site-footer">
