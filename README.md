@@ -95,12 +95,10 @@ PORT=5193 bun run test   # if something else already has port 5173
 
 Cloudflare Workers Builds builds the `tomsawyerlabs-com` Worker (static
 assets only, `wrangler.jsonc`) with `bun run build` and deploys it with
-`bunx wrangler deploy`. Until launch the production branch is `fence-site`,
-served at [next.tomsawyerlabs.com](https://next.tomsawyerlabs.com) with
-`X-Robots-Tag: noindex` (`public/_headers`); every other branch gets a
-`*.workers.dev` preview URL. tomsawyerlabs.com itself still comes from the old
-Cloudflare Pages project until it moves over. The GitHub Actions workflow only
-checks formatting, types, tests and the build.
+`bunx wrangler deploy` on every push to `master`; other branches get a
+`*.workers.dev` preview URL. The hostnames (tomsawyerlabs.com, www and
+next.tomsawyerlabs.com) are attached in the ops repo. The GitHub Actions
+workflow only checks formatting, types, tests and the build.
 
 ```bash
 bun run build && bun run preview   # the built site under wrangler dev

@@ -1,5 +1,0 @@
-# Cloudflare Workers static-assets headers.
-# Pre-launch: keep next.tomsawyerlabs.com and preview versions out of search
-# results. Remove this rule when the site moves to tomsawyerlabs.com.
-/*
-  X-Robots-Tag: noindex
