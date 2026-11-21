@@ -128,15 +128,19 @@ counter, Empyrean Gate, the HIL runner and clearance.
        Cameron asked mid-launch). - [x] `fence-site` fast-forwarded onto `master` and pushed (`7afc4fa`).
        The old Pages project built it, so tomsawyerlabs.com already serves
        the new site; CI green; the Worker build of the same commit is live
-       on next.tomsawyerlabs.com. - [ ] Cameron: Workers Builds production branch -> `master`. - [ ] Ops: apex to the Worker (`worker: {name: tomsawyerlabs-com,
-         external: true}` in place of `pages:`, www still redirects) and a
-       tombstone for the Pages project. Staged in ops worktree
-       `tsl-apex-worker` (scratchpad `ops-apex`); dry run: 1 create
-       (worker domain), 3 deletes (Pages domain, apex CNAME, Pages
-       project). Waiting on Cameron's yes. Pushing needs
-       `ALLOW_DELETES=1` for the pre-push dry-run hook. - [ ] Afterwards: drop the tombstone entry; local `master` in the main
-       checkout is behind origin (has other threads' uncommitted work, left
-       alone).
+       on next.tomsawyerlabs.com. - [ ] Cameron: Workers Builds production branch -> `master`
+       (unconfirmed; the builds triggers API returned an empty list on
+       2026-11-20, so check the dashboard). - [x] Ops `fc4d2ef1` (Cameron's yes, 2026-11-20 7:42 PM PST (03:42Z)):
+       apex -> Worker (`worker: {name: tomsawyerlabs-com, external: true,
+       provision: true}` in place of `pages:`, www still 301s), next.tomsawyerlabs.com
+       dropped (Cameron: "disable next.tomsawyerlabs.com"), Pages project
+       tombstoned. Checked: apex 200, www 301 to apex, next. no longer
+       resolves. - [ ] The Pages project itself is not deleted yet: CI run 44862012346 tried
+       it before its custom domain was gone (Cloudflare 8000028, "delete all
+       custom domains first"), and the local token can't delete Pages (403).
+       The next ops push retries it automatically; after that, drop the
+       tombstone entry. (The next. AAAA error in the same run was the read-only
+       record the worker-domain delete removes by itself.)
 
 ## Open questions for Cameron
 
