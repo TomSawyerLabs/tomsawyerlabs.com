@@ -1,0 +1,7 @@
+# Cloudflare Workers static assets: response headers by path.
+# https://developers.cloudflare.com/workers/static-assets/headers/
+
+# Everything under /assets/ is content-hashed by Vite: a new version gets a new
+# name, so a browser can keep each file forever without checking back.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
