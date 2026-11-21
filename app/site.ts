@@ -6,7 +6,7 @@ export const SITE = {
   /** The production origin, without a trailing slash. */
   url: "https://tomsawyerlabs.com",
   description:
-    "Open-source tools from our shop, given away: embedded testing, lab tools, fabrication, self-hosting and a FIRST Robotics practice field.",
+    "Open-source tools from our shop, shared freely: embedded testing, lab gear, fabrication, self-hosting, and a FIRST Robotics practice field.",
 } as const;
 
 /**

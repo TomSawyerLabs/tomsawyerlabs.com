@@ -51,8 +51,9 @@ export default function ProjectRoute() {
             <p className="detail__tagline">{project.tagline}</p>
             {project.early && (
               <p className="detail__early">
-                <span className="badge">early</span> Still taking shape: expect
-                gaps and changes. The README has the details.
+                <span className="badge">early</span> Still taking shape—expect
+                rough edges and breaking changes. Check the README for current
+                status.
               </p>
             )}
           </header>
@@ -62,7 +63,7 @@ export default function ProjectRoute() {
               <p className="detail__summary">{project.summary}</p>
               {project.features.length > 0 && (
                 <>
-                  <h2>What it does</h2>
+                  <h2>{project.featuresHeading ?? "What it does"}</h2>
                   <ul className="ticks">
                     {project.features.map((f) => (
                       <li key={f}>{f}</li>

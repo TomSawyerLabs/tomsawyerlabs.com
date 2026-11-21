@@ -30,29 +30,30 @@ export const CATEGORIES: Category[] = [
     id: "shop",
     name: "Shop & community",
     blurb:
-      "Running a shared space: the practice field, who's allowed on the tools, and what needs doing.",
+      "Running a shared space: the practice field, safety sign-offs, shop chores, and what's in which bin.",
   },
   {
     id: "testing",
     name: "Embedded testing",
     blurb:
-      "Hardware-in-the-loop: real microcontrollers, flashed and exercised by CI on every push.",
+      "Hardware-in-the-loop CI, bench servers, AVR libraries, and logic-analyzer decoders for real silicon.",
   },
   {
     id: "lab",
     name: "Lab & EDA tools",
-    blurb: "Getting data out of the instruments and file formats on the bench.",
+    blurb:
+      "Rescuing files from proprietary EDA formats and talking directly to bench gear.",
   },
   {
     id: "fab",
     name: "Fabrication",
-    blurb: "Printing, cutting and building things.",
+    blurb: "3D print farms and true-to-size printing.",
   },
   {
     id: "playa",
     name: "On the playa",
     blurb:
-      "Built for Black Rock City and the dust: shelters, and things to ride.",
+      "Built for Black Rock City and the dust: shelters and things to ride.",
   },
   {
     id: "selfhost",
@@ -62,7 +63,7 @@ export const CATEGORIES: Category[] = [
   {
     id: "devtools",
     name: "Developer tools",
-    blurb: "Keeping builds, test runs and CI bills under control.",
+    blurb: "Keeping builds, test runs, and CI bills under control.",
   },
   {
     id: "desktop",
@@ -99,12 +100,14 @@ export type Project = {
   /** Two or three sentences, shown at the top of the project's page. */
   summary: string;
   features: string[];
+  /** Optional heading above features (defaults to "What it does"). */
+  featuresHeading?: string;
   stack: string[];
   license?: string;
   links: Link[];
   /** Gets its own page at /<slug>. Small pieces are listed only. */
   page: boolean;
-  /** Listed with a "write-up coming" label until we have its story. */
+  /** Listed with a "story coming" label until we have its story. */
   stub?: boolean;
   /** The README says it's early: shown as a label. */
   early?: boolean;
@@ -122,15 +125,15 @@ export const PROJECTS: Project[] = [
     name: "The practice field",
     category: "shop",
     tagline:
-      "A full FRC practice field in East Palo Alto, shared by Bay Area FIRST teams",
+      "A full-size FRC practice field in East Palo Alto, shared by Bay Area FIRST teams",
     summary:
-      "A full-size FIRST Robotics Competition practice field in East Palo Alto, California. About 20 Bay Area FRC teams book time on it and drive real matches. It runs on pFMS, so teams bring their robot exactly as it is set up at home.",
+      "Our East Palo Alto shop houses a full-size FIRST Robotics Competition practice field shared by about 20 Bay Area teams. Because it runs on pFMS, teams roll in, book a slot, and drive real matches with their robot configured exactly as it is at home.",
+    featuresHeading: "Highlights",
     features: [
-      "Full FRC field, booked by teams in time slots",
-      "Real matches with official timing, E-Stop and A-Stop",
-      "No radio reprogramming: robots join as configured at home",
-      "Scoring and a scoreboard driven by pFMS",
-      "Used by about 20 Bay Area FRC teams",
+      "Full-size FRC field booked in dedicated time slots",
+      "Real matches with official timing, E-Stop, and A-Stop",
+      "Zero radio reprogramming—robots join using their home Wi-Fi config",
+      "Live scoring and a field-side scoreboard driven by pFMS",
     ],
     stack: ["pFMS", "VH-113 field radio"],
     links: [
@@ -148,7 +151,7 @@ export const PROJECTS: Project[] = [
       },
       {
         label: "Serves",
-        value: "≈20 Bay Area FRC teams",
+        value: "About 20 Bay Area FRC teams",
       },
     ],
   },
@@ -160,14 +163,14 @@ export const PROJECTS: Project[] = [
     tagline:
       "A field management system for FRC practice fields. Bring your robot as it is.",
     summary:
-      "pFMS runs an FRC practice field from a web browser. A team enters the SSID and WPA key its robot already uses, once, and the field radio serves that network, so there is no radio reprogramming and no kiosk. Laptops stay on the site Wi-Fi with internet, and Driver Station, code deploys and mDNS names all work as they do at home.",
+      "pFMS runs an FRC practice field from a web browser. Teams enter the SSID and WPA key their robot already uses—once—and the field radio serves that network, eliminating radio reprogramming and field kiosks. Driver laptops stay on site Wi-Fi with internet, while Driver Station, code deploys, and mDNS names work just as they do at home.",
     features: [
-      "Self-service matches with official timing, hold-to-start, E-Stop and A-Stop",
-      "Stops pressed while offline wait, then go out on reconnect; e-stops survive a restart",
+      "Self-service matches with official timing, hold-to-start, E-Stop, and A-Stop",
+      "Offline stop commands queue and fire on reconnect; E-Stops survive a restart",
       "Scoring API for goal sensors and referee tablets, plus a TV scoreboard",
-      "Swappable game layers per season, and speed challenges and relay races",
-      "Practice and match video for each team, and a daily field timelapse",
-      "Laptop to robot routing across team VLANs, with multiple robots per team",
+      "Swappable per-season game layers, plus speed challenges and relay races",
+      "Practice and match video for each team, plus a daily field timelapse",
+      "Laptop-to-robot routing across team VLANs, supporting multiple robots per team",
     ],
     stack: [
       "TypeScript",
@@ -193,14 +196,15 @@ export const PROJECTS: Project[] = [
     name: "Clearance",
     category: "shop",
     repo: "TomSawyerLabs/clearance",
-    tagline: "Liability releases and training sign-offs, signed with passkeys",
+    tagline:
+      "Liability waivers and training sign-offs, backed by passkey signatures",
     summary:
-      "Clearance records who is cleared to do what. People sign documents such as a liability release with a passkey, and the people who run a group see who has signed and who has not. It was built for a robotics maker space where students need a parent's signature, but nothing in it is specific to that.",
+      "Clearance tracks who is cleared for what. Members sign releases and agreements with a passkey, and organizers see at a glance who is current and who still needs to sign. Built for a robotics makerspace where students need a parent's signature, but general enough for any group or shop.",
     features: [
       "Passkey-only accounts, created from invitation links",
       "Each sign-off is a passkey signature over the exact record, verifiable without the app",
-      "Parent and guardian accounts that can sign for a child, until the child comes of age",
-      "Mentor-signed certifications for training",
+      "Parent and guardian accounts that sign for minors until they come of age",
+      "Mentor-signed training and tool certifications",
       "Versioned Markdown documents with inline questions and organization variables",
       "Runs as one binary with SQLite, in Docker with Postgres, or on Cloudflare Workers with D1",
     ],
@@ -220,11 +224,11 @@ export const PROJECTS: Project[] = [
     name: "Punchlist",
     category: "shop",
     repo: "cinderblock/punchlist",
-    tagline: "A shared to-do list of physical jobs for a real space",
+    tagline: "A shared to-do list for physical jobs in a real space",
     summary:
-      "Punchlist is a shared list of physical jobs for a workshop, lab or clubhouse. It belongs to the space, not to anyone's phone: anyone on site can see what needs doing and tick it off. People who sign in can do it from anywhere, keep private items and get reminders, and AI agents can read and write tasks under their own names.",
+      "Punchlist is a shared task list for a workshop, lab, or clubhouse. It belongs to the space, not to anyone's phone: anyone on site can see what needs doing and check it off. Signed-in members can update tasks from anywhere, keep private items, and get reminders, while AI agents can read and file tasks under their own names.",
     features: [
-      "Phone-first, installable, and check-offs made with no signal sync later",
+      "Phone-first, installable PWA that syncs offline check-offs once you're back in range",
       "Passkey sign-in, plus an optional no-account tier for people on site",
       "Floor-plan map with zones, so a task has a place to walk to",
       "Repeating tasks by schedule or by interval after completion",
@@ -249,14 +253,14 @@ export const PROJECTS: Project[] = [
     tagline:
       "Scan a QR sticker on a storage bin, see what's inside, snap a photo, move on",
     summary:
-      "bins is an offline-first web app for tracking what is in a group's storage boxes. Every box gets a QR sticker; scanning it opens that box's page with its latest contents photo, notes and location. It is built for clubs, hackerspaces and event crews, and works in basements and storage units with no signal.",
+      "bins is an offline-first web app for tracking what lives in a group's storage boxes. Every bin gets a QR sticker; scanning it opens that bin's page with its latest contents photo, notes, and shelf location. Built for clubs, hackerspaces, and event crews—and works in basements and storage units with zero signal.",
     features: [
       "Scanning a sticker is the login; no accounts to manage",
       "Full offline replica on each device, synced when back online",
-      "Fuzzy search for which box holds a thing, offline",
-      "Shelves, bays and floor plans to find boxes by location",
+      "Offline fuzzy search to find which bin holds what",
+      "Shelves, bays, and floor plans to find boxes by location",
       "Sticker printing in-app, including to AirPrint label printers",
-      "Optional AI help to describe photos and suggest where a thing should go",
+      "Optional AI help to describe bin photos and suggest where new items belong",
     ],
     stack: ["TypeScript", "PWA", "IndexedDB"],
     license: "MIT",
@@ -274,14 +278,14 @@ export const PROJECTS: Project[] = [
     category: "testing",
     repo: "TomSawyerLabs/mcu-hil",
     tagline:
-      "Raspberry Pi boards that power, program and test real microcontrollers",
+      "Raspberry Pi boards that power, program, and test real microcontrollers",
     summary:
-      "mcu-hil is a family of hardware-in-the-loop boards. A Raspberry Pi powers, programs, clocks, resets and talks to the microcontroller on the board, so software tests run against real silicon in a repeatable way. AVRs come first, starting with the ATmega16U2.",
+      "mcu-hil is a family of hardware-in-the-loop boards. A Raspberry Pi powers, programs, clocks, resets, and talks to the onboard microcontroller so automated tests run repeatably against real silicon. AVR targets come first, starting with the ATmega16U2.",
     features: [
-      "Compute Module 4/5 carrier in the same 55 x 40 mm outline, so they stack",
+      "Compute Module 4/5 carrier matching the 55 × 40 mm footprint so boards stack",
       "Pi HAT variant for standard 40-pin Raspberry Pis",
       "Shared schematic sheets and one GPIO map across variants",
-      "Every part has an LCSC number, for fully assembled boards from JLCPCB",
+      "Every part carries an LCSC number for turnkey JLCPCB assembly",
       "Schematics generated from a Python design script",
     ],
     stack: ["KiCad 10", "Python", "Raspberry Pi CM4/CM5", "AVR"],
@@ -302,13 +306,13 @@ export const PROJECTS: Project[] = [
     tagline:
       "Diskless, one-job GitHub Actions runners for hardware-in-the-loop tests",
     summary:
-      "hil-runner turns a Raspberry Pi with a test board into a GitHub Actions runner that takes one job and then reboots clean. The Pi netboots from BootBob and runs entirely from RAM, so nothing a job does survives. It runs the dfu-programmer project's tests against a real ATmega8U2.",
+      "hil-runner turns a Raspberry Pi and test board into an ephemeral GitHub Actions runner: take one job, then reboot clean. Each Pi netboots from BootBob and runs entirely from RAM, so nothing a job does survives. Built to run dfu-programmer's test suite against a real ATmega8U2.",
     features: [
       "Every job gets a freshly netbooted machine with no disk",
       "OS image is public and holds no secrets",
       "Small broker hands out one-job runner configs through a GitHub App",
       "Each job power-cycles the target AVR into its bootloader first",
-      "Hardware write-protect on boot and ID EEPROMs, kernel holds the ID lines",
+      "Hardware write-protection on boot and ID EEPROMs, with the kernel holding the ID lines",
     ],
     stack: [
       "Debian arm64",
@@ -331,15 +335,16 @@ export const PROJECTS: Project[] = [
     name: "BootBob",
     category: "testing",
     repo: "cinderblock/BootBob",
-    tagline: "A network boot server with a web UI. No DHCP server needed.",
+    tagline:
+      "A network boot server with a web UI. Works with your existing DHCP server.",
     summary:
-      "BootBob netboots PCs and Raspberry Pis and shows every machine in a web UI as it arrives. Machines wait at a menu and can be pointed at an image from the browser, with nobody at the keyboard. It listens to DHCP but never answers it, so it fits next to an existing router.",
+      "BootBob netboots PCs and Raspberry Pis and shows every machine in a web UI as it arrives. Machines wait at a menu and can be pointed at an image from the browser, with nobody at the keyboard. It passively listens to DHCP to detect each machine's firmware without ever sending DHCP replies, so it sits cleanly alongside your existing router.",
     features: [
-      "One boot file name for BIOS, UEFI x86-64 and UEFI arm64",
+      "One boot file name for BIOS, UEFI x86-64, and UEFI arm64",
       "Raspberry Pi 4 and 5 netboot natively, including root over NBD",
       "Serves several networks and VLANs, admitting machines per interface",
       "Fallback menu with netboot.xyz built in",
-      "Catalogue of upstream images, fetched and verified on first use",
+      "Catalog of upstream images, fetched and verified on first use",
     ],
     stack: ["Rust", "iPXE", "TFTP", "NBD"],
     license: "MIT",
@@ -358,13 +363,13 @@ export const PROJECTS: Project[] = [
     category: "testing",
     repo: "cinderblock/BenchBob",
     tagline:
-      "A bench server for the hardware plugged into it, from a browser, script or agent",
+      "Put every device on your bench on the LAN—for browsers, scripts, and agents",
     summary:
-      "BenchBob runs on a Raspberry Pi or any Linux box and puts the devices plugged into it on the LAN. Drives, serial ports, CAN, I2C, GPIO, debug probes and more each get a panel in a web dashboard, a REST endpoint and MCP tools. It has no login, so it is meant for a trusted bench network.",
+      "BenchBob runs on a Raspberry Pi or Linux host and exposes every device plugged into it over your LAN. Drives, serial ports, CAN, I2C, GPIO, debug probes, and more each get a web dashboard panel, a REST endpoint, and MCP tools. Built for trusted bench networks, with no login overhead.",
     features: [
       "Drives: auto-mount, NFS/NBD/SMB sharing, erase, and Raspberry Pi OS flashing",
       "Serial terminal with network bridges and esptool/avrdude flashing",
-      "CAN, I2C, 1-Wire, GPIO, LED strips, IR, BLE, cameras, SDR, GPS and UPS panels",
+      "CAN, I2C, 1-Wire, GPIO, LED strips, IR, BLE, cameras, SDR, GPS, and UPS panels",
       "Debug probes (ST-Link, J-Link, CMSIS-DAP) with an OpenOCD GDB server each",
       "USB per-port power and USB/IP sharing",
       "Everything is a REST endpoint; peripheral actions are MCP tools",
@@ -422,12 +427,12 @@ export const PROJECTS: Project[] = [
     category: "testing",
     repo: "cinderblock/AVR",
     tagline:
-      "A C++ library for AVR hardware: pins, USART, SPI, ADC, WS2812 and DShot",
+      "Zero-overhead C++ library for 8-bit AVR peripherals: pins, USART, SPI, ADC, WS2812, and DShot",
     summary:
       "AVR++ is a C++ library for 8-bit AVR peripherals that aims to compile down to single instructions where it can. It covers I/O pins, serial, SPI, ADC, the watchdog, and bit-banged protocols such as WS2812 LEDs and DShot for brushless ESCs.",
     features: [
-      "Compile-time IOpin types with one-instruction set, clear and toggle",
-      "Output, weak-output and open-drain pin helpers",
+      "Compile-time IOpin types with one-instruction set, clear, and toggle",
+      "Output, weak-output, and open-drain pin helpers",
       "Bit-banged WS2812 and DShot, including bidirectional DShot telemetry",
       "Interrupt-safe atomic wrappers",
     ],
@@ -449,7 +454,7 @@ export const PROJECTS: Project[] = [
     repo: "cinderblock/uMaker",
     tagline: "Composable Makefiles for embedded C and C++ projects",
     summary:
-      "µMaker is a set of Makefile modules for embedded projects. A project's Makefile includes only the modules it needs, such as the core build, FreeRTOS or an Arduino core.",
+      "µMaker is a set of Makefile modules for embedded projects. A project's Makefile includes only the modules it needs, such as the core build, FreeRTOS, or an Arduino core.",
     features: [
       "Core build to .elf and .hex",
       "FreeRTOS module that copies the right port files",
@@ -470,7 +475,7 @@ export const PROJECTS: Project[] = [
     name: "usb-dfu",
     category: "testing",
     repo: "cinderblock/usb-dfu",
-    tagline: "A fork of LUFA's USB DFU bootloader",
+    tagline: "A fork of LUFA's USB DFU bootloader for AVR microcontrollers",
     summary:
       "A fork of the LUFA project's USB DFU bootloader for AVR microcontrollers.",
     features: [],
@@ -485,15 +490,15 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "saleae-pwm",
-    name: "PWM Duty Cycle analyzer",
+    name: "PWM Duty Cycle Analyzer",
     category: "testing",
     repo: "cinderblock/saleae-pwm-duty-cycle-analyzer",
     tagline:
       "Live PWM duty cycle and frequency in Saleae Logic 2, readable when zoomed out",
     summary:
-      "A Saleae Logic 2 analyzer that measures a PWM signal live as you capture. It reports duty cycle, frequency, period and pulse widths, and starts a new result only when the averaged value changes, so a long capture stays readable zoomed out.",
+      "A Saleae Logic 2 analyzer that measures a PWM signal live as you capture. It reports duty cycle, frequency, period, and pulse widths, and starts a new result only when the averaged value changes, so a long capture stays readable zoomed out.",
     features: [
-      "Duty, frequency, period, pulse and gap widths",
+      "Duty, frequency, period, pulse, and gap widths",
       "Results that span each stretch of steady value",
       "Reports stuck-high and stuck-low when pulses stop",
       "Merges one-sample switching spikes back into the real period",
@@ -511,15 +516,15 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "saleae-quadrature",
-    name: "Quadrature Encoder analyzer",
+    name: "Quadrature Encoder Analyzer",
     category: "testing",
     repo: "cinderblock/saleae-quadrature-analyzer",
     tagline:
       "Live quadrature encoder decoding in Saleae Logic 2, with index and skipped-state checks",
     summary:
-      "A Saleae Logic 2 analyzer that decodes an incremental quadrature encoder live as you capture. It takes A, B and an optional Z index, and reports count, position, direction and speed.",
+      "A Saleae Logic 2 analyzer that decodes an incremental quadrature encoder live as you capture. It takes A, B, and an optional Z index, and reports count, position, direction, and speed.",
     features: [
-      "X4, X2 and X1 decoding, exact when the shaft dithers on an edge",
+      "X4, X2, and X1 decoding, exact when the shaft dithers on an edge",
       "Index pulses in mark or reset mode",
       "Flags skipped states instead of guessing direction",
       "Moves-and-holds mode to read fast motion zoomed out",
@@ -536,15 +541,15 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "saleae-stepper",
-    name: "Stepper Motor Coils analyzer",
+    name: "Stepper Motor Coils Analyzer",
     category: "testing",
     repo: "cinderblock/saleae-stepper-analyzer",
     tagline:
       "Live stepper motor position in Saleae Logic 2 from the four coil drive signals",
     summary:
-      "A Saleae Logic 2 analyzer that watches the four drive signals of a bipolar stepper and shows the position the motor is being driven to. One algorithm covers wave, full and half stepping and PWM microstepping.",
+      "A Saleae Logic 2 analyzer that watches the four drive signals of a bipolar stepper and shows the position the motor is being driven to. One algorithm covers wave, full, and half stepping plus PWM microstepping.",
     features: [
-      "Position in steps, degrees or revolutions, plus electrical angle",
+      "Position in steps, degrees, or revolutions, plus electrical angle",
       "Detects the PWM frequency automatically",
       "Resumes position after de-energized gaps",
       "Moves-and-holds mode for readable long captures",
@@ -567,9 +572,9 @@ export const PROJECTS: Project[] = [
     tagline:
       "Read and write NI Multisim and Ultiboard files without NI's software",
     summary:
-      "A decoder and encoder for the proprietary Electronics Workbench formats used by NI Multisim and Ultiboard. It gets designs and part databases out into JSON and XML, and back where the format allows. It is the reading layer under multisim2kicad.",
+      "A codec for the proprietary Electronics Workbench formats behind NI Multisim and Ultiboard. It unpacks designs and part databases to JSON and XML—and re-encodes them where the format allows. Serves as the file layer underneath multisim2kicad.",
     features: [
-      "ewd CLI: decode .ms1x, .ewprj, .ewnet and part databases by magic bytes",
+      "ewd CLI: decode .ms1x, .ewprj, .ewnet, and part databases by magic bytes",
       "ewe CLI: re-encode compressed XML so Multisim opens it again",
       "Byte-identical round trips across a 592-design test corpus",
       "Fast, dependency-free parser for EW's XML dialect",
@@ -595,12 +600,12 @@ export const PROJECTS: Project[] = [
     repo: "cinderblock/multisim2kicad",
     tagline: "Convert NI Multisim schematics and Ultiboard PCBs to KiCad",
     summary:
-      "multisim2kicad converts Multisim schematics, Ultiboard boards and component databases into KiCad projects. A schematic and board with the same name become one linked KiCad project, and the converted schematic still simulates in KiCad.",
+      "multisim2kicad converts Multisim schematics, Ultiboard boards, and component databases into KiCad projects. Matching schematic and board files merge into one linked KiCad project, with SPICE simulation intact.",
     features: [
-      "Schematics with sheet hierarchy, real part graphics, buses and net names",
-      "PCBs with copper stack, pads, vias, zones, footprints and silkscreen",
+      "Schematics with sheet hierarchy, real part graphics, buses, and net names",
+      "PCBs with copper stack, pads, vias, zones, footprints, and silkscreen",
       "Design rules carried into KiCad net classes",
-      "Project symbol and footprint libraries generated alongside",
+      "Generates local project symbol and footprint libraries automatically",
       "SPICE models carried over for KiCad's ngspice simulator",
     ],
     stack: ["TypeScript", "Node.js / Bun", "KiCad"],
@@ -625,15 +630,15 @@ export const PROJECTS: Project[] = [
     tagline:
       "An open driver and app for AmScope and ToupTek USB3 microscope cameras",
     summary:
-      "LoupeCam talks to AmScope and ToupTek USB3 microscope cameras directly over USB, with no vendor SDK and no driver install. It runs as a desktop app, a command line tool, or a headless server that turns the camera into a network device.",
+      "LoupeCam talks to AmScope and ToupTek USB3 microscope cameras directly over USB, with no vendor SDK and no driver install. It runs as a desktop app, a command-line tool, or a headless server that turns the camera into a network device.",
     features: [
       "Raw frame streaming and full control of camera settings",
-      "Image pipeline: demosaic, white balance, color correction, auto exposure",
-      "Headless server with MJPEG stream, WebSocket API and web UI",
-      "Desktop app for Windows, macOS and Linux",
+      "Image pipeline: demosaic, white balance, color correction, and auto exposure",
+      "Headless server with MJPEG stream, WebSocket API, and web UI",
+      "Desktop app for Windows, macOS, and Linux",
       "Runs on ARM Linux boards such as the Raspberry Pi",
     ],
-    stack: ["Rust", "Tauri", "USB"],
+    stack: ["Rust", "Tauri 2", "USB"],
     license: "MIT OR Apache-2.0",
     links: [
       {
@@ -660,7 +665,7 @@ export const PROJECTS: Project[] = [
     features: [
       "Live charts of four thermocouples and the cold junction",
       "Drag-to-edit reflow profile editor",
-      "Saved mode, or closed-loop control from the Pi",
+      "Run oven-stored profiles or direct closed-loop control from the Pi",
       "Serial firmware flashing over the LPC ISP protocol",
     ],
     stack: ["TypeScript", "Bun", "React", "uPlot", "Raspberry Pi Zero"],
@@ -679,16 +684,16 @@ export const PROJECTS: Project[] = [
     category: "lab",
     repo: "cinderblock/cad-preview",
     tagline:
-      "Pull the embedded thumbnail out of CAD and 3D files, in pure JavaScript",
+      "Extract embedded thumbnails from CAD and 3D files in pure JavaScript",
     summary:
-      "cad-preview finds the preview image that many CAD and 3D formats store inside the file and returns it as PNG, JPEG, BMP or GIF bytes. It needs no CAD software, native libraries or cloud service, and runs in the browser, Node and Bun.",
+      "cad-preview finds the preview image that many CAD and 3D formats store inside the file and returns it as PNG, JPEG, BMP, or GIF bytes. It needs no CAD software, native libraries, or cloud service, and runs in the browser, Node.js, and Bun.",
     features: [
-      "SolidWorks, Inventor, Solid Edge, Revit, 3ds Max",
-      "AutoCAD DWG and DXF, Rhino, SketchUp, Blender",
-      "3MF, FreeCAD and Fusion 360 packages, including per-plate slicer renders",
+      "SolidWorks, Inventor, Solid Edge, Revit, and 3ds Max",
+      "AutoCAD DWG and DXF, Rhino, SketchUp, and Blender",
+      "3MF, FreeCAD, and Fusion 360 packages, including per-plate slicer renders",
       "Returns all previews in a file, best first",
     ],
-    stack: ["TypeScript", "Browser / Node / Bun"],
+    stack: ["TypeScript", "Browser / Node.js / Bun"],
     license: "MIT",
     links: [
       {
@@ -710,12 +715,12 @@ export const PROJECTS: Project[] = [
     tagline:
       "A self-hosted slicer and print-farm manager built on OrcaSlicer's engine",
     summary:
-      "FarmSlicer is a web-based slicer and job manager for a small 3D print farm. Upload a model, pick a printer and profiles, and get G-code, sliced on the server or in your browser with OrcaSlicer's engine compiled to WebAssembly. It then sends, queues and follows prints across several printer brands.",
+      "FarmSlicer is a web-based slicer and job manager for small 3D print farms. Upload a model, pick a printer and profile, and slice with OrcaSlicer's engine—on the server or right in your browser via WebAssembly. Then dispatch, queue, and monitor prints across a mixed fleet of printers.",
     features: [
-      "Plate editing, multi-color painting, supports and cuts in the browser",
-      "Drives Bambu Lab, Klipper, OctoPrint, PrusaLink and Elegoo Centauri Carbon printers",
-      "Checks every plate's G-code against a model of the printer before it is sent",
-      "Print queue, projects and live camera views",
+      "Plate editing, multi-color painting, supports, and cuts in the browser",
+      "Drives Bambu Lab, Klipper, OctoPrint, PrusaLink, and Elegoo Centauri Carbon printers",
+      "Validates every plate's G-code against a model of the target printer before sending",
+      "Print queue, projects, and live camera views",
       "Passkey accounts, groups with quotas, and an OctoPrint-compatible upload API",
       "MCP server so AI agents can work the queue",
     ],
@@ -745,7 +750,8 @@ export const PROJECTS: Project[] = [
     name: "Print Template",
     category: "fab",
     repo: "cinderblock/print-template",
-    tagline: "Print true-to-size onto envelopes from the browser",
+    tagline:
+      "Print exact-size addresses onto #10 envelopes straight from the browser",
     summary:
       "A small web page that prints addresses onto #10 envelopes at exact physical size. Addresses stay in the browser and are never uploaded.",
     features: [
@@ -775,14 +781,15 @@ export const PROJECTS: Project[] = [
     tagline:
       "Foam-panel shelters that fold flat and set up in under five minutes. No tape.",
     summary:
-      "HyparHuts are temporary shelters descended from the hexayurt, built from rigid insulation foam with the tape taken out. Every panel is wrapped in house wrap and hinged with glued fabric strips, so the whole hut unfolds like an accordion and lasts for years. The first one went to the playa four years running.",
+      "HyparHuts are temporary shelters descended from the hexayurt, built from rigid insulation foam without a roll of tape. Every panel is wrapped in house wrap and hinged with glued fabric strips, so the whole hut unfolds like an accordion and lasts for years. The first one went to the playa four years running.",
+    featuresHeading: "Highlights",
     features: [
       "Sets up in under five minutes and folds flat to store and haul",
       "Panels wrapped in house wrap, hinged with fabric strips kept in shear",
       "Wooden trim under the wrap protects every edge in transport",
       "Stake a separate frame first; the hut drops onto it and locks in",
       "A fitted roof tarp with bungees: waterproof, and no guy lines to trip on",
-      "The twisted roof approximates a hyperbolic paraboloid, which keeps it rigid in wind",
+      "Twisted hyperbolic-paraboloid roof geometry stays rigid in high wind",
     ],
     stack: ["Rigid foam board", "House wrap", "Contact cement", "SolidWorks"],
     license: "GPL-3.0",
@@ -845,15 +852,15 @@ export const PROJECTS: Project[] = [
     category: "selfhost",
     repo: "cinderblock/uptime-tracker",
     tagline:
-      "Uptime checks, a status dashboard and push alerts on Cloudflare's free plan",
+      "Uptime checks, a status dashboard, and push alerts on Cloudflare's free tier",
     summary:
-      "uptime-tracker is self-hosted uptime monitoring that runs as one Cloudflare Worker with D1 and KV. It works on the free plan, and changes where it keeps history depending on which plan you are on.",
+      "Self-hosted uptime monitoring packaged as a single Cloudflare Worker with D1 and KV. Runs on Cloudflare's free tier and adapts history storage to match your plan.",
     features: [
-      "HTTP checks with expected status, redirect and www-to-apex checks",
-      "Dashboard with 7 and 30 day uptime and latency charts",
+      "HTTP checks with expected status, redirect, and www-to-apex checks",
+      "Dashboard with 7- and 30-day uptime and latency charts",
       "Timeline that lines up state changes across services",
       "Web Push alerts with per-service thresholds",
-      "Optional GitHub Actions status, Cloudflare cost watch and DDNS log",
+      "Optional GitHub Actions status, Cloudflare cost watch, and DDNS log",
     ],
     stack: ["TypeScript", "Cloudflare Workers", "D1", "KV"],
     license: "MIT",
@@ -871,9 +878,9 @@ export const PROJECTS: Project[] = [
     category: "selfhost",
     repo: "cinderblock/telemetry-collector",
     tagline:
-      "Collect errors, feedback and screenshots from your apps on Cloudflare's free tier",
+      "Collect errors, feedback, and screenshots from your apps on Cloudflare's free tier",
     summary:
-      "telemetry-collector is a cheap, self-hosted place to gather crash reports, user feedback, screenshots and usage counts from your own apps. It runs on Cloudflare Workers, D1, R2 and Analytics Engine, and sheds detail rather than running up a bill.",
+      "telemetry-collector is a low-cost, self-hosted place to gather crash reports, user feedback, screenshots, and usage counts from your own apps. It runs on Cloudflare Workers, D1, R2, and Analytics Engine, and sheds detail rather than running up a bill.",
     features: [
       "Public ingest URL per app, with keys derived offline at build time",
       "Duplicate crashes coalesce into one issue with a count",
@@ -901,10 +908,10 @@ export const PROJECTS: Project[] = [
     repo: "cinderblock/smtp-bridge",
     tagline: "Accept authenticated SMTP and POST each message to a webhook",
     summary:
-      "smtp-bridge is a small SMTP server that turns each incoming message into an HTTP webhook call. It is a way out of SMTP for devices and apps that can only send email. It never relays mail onward.",
+      "A small SMTP server that turns incoming messages into HTTP webhook calls—an off-ramp for devices and legacy apps that only know how to send email. Never relays mail onward.",
     features: [
       "Mandatory AUTH, with credentials per route",
-      "Multiple listeners: plaintext, STARTTLS or implicit TLS",
+      "Multiple listeners: plaintext, STARTTLS, or implicit TLS",
       "Automatic certificates by ACME DNS-01 through Cloudflare",
       "Sync delivery with real backpressure, or a durable retry queue",
       "HMAC-signed payloads and optional SQLite message log",
@@ -926,7 +933,7 @@ export const PROJECTS: Project[] = [
     tagline:
       "Publicly trusted certificates for a fleet of devices, with no DNS token on any of them",
     summary:
-      "dns01-issuer takes a certificate signing request and returns a certificate, using ACME DNS-01. Each device keeps its own key and the issuer alone holds the DNS credential. One config file binds names to key fingerprints, so approving a device is a commit.",
+      "dns01-issuer takes a certificate signing request and returns a certificate using ACME DNS-01. Each device keeps its own key and the issuer alone holds the DNS credential. One config file binds names to key fingerprints, so approving a device is a commit.",
     features: [
       "Issues only when a CSR's names and key match a config entry exactly",
       "Waits for the challenge record on every authoritative server",
@@ -974,7 +981,7 @@ export const PROJECTS: Project[] = [
     category: "selfhost",
     repo: "cinderblock/caddy-onlink",
     tagline:
-      "A Caddy matcher for clients on this host's own networks, IPv6 included",
+      "A Caddy request matcher for clients on the host's local networks, IPv6 included",
     summary:
       "caddy-onlink adds a Caddy request matcher that asks whether a client is on one of the host's own networks. Unlike a private-range check, it works for IPv6 devices that arrive from a delegated global prefix.",
     features: [
@@ -1002,7 +1009,7 @@ export const PROJECTS: Project[] = [
       "caddy-librespeed serves a LibreSpeed-compatible speed test, with a built-in browser UI, from inside Caddy. One directive is the whole site, and existing LibreSpeed clients work unchanged.",
     features: [
       "Speaks LibreSpeed's backend protocol, with or without .php paths",
-      "Built-in UI measuring ping, jitter, download and upload",
+      "Built-in UI measuring ping, jitter, download, and upload",
       "Server list so users can pick the nearest test server",
       "No PHP, no separate server, no files on disk",
     ],
@@ -1023,11 +1030,11 @@ export const PROJECTS: Project[] = [
     repo: "cinderblock/wifi-tester",
     tagline: "A LAN page for answering 'why is the Wi-Fi bad?'",
     summary:
-      "wifi-tester is a small site on the local network with a browser speed test and a one-line diagnostic for Windows, macOS and Linux. Reports are enriched with what the UniFi controller saw for that machine, so a person or an agent can see why the connection was poor.",
+      "wifi-tester is a small site on the local network with a browser speed test and a one-line diagnostic for Windows, macOS, and Linux. Reports are enriched with what the UniFi controller saw for that machine, so a person or an agent can see why the connection was poor.",
     features: [
       "Speed test to the LAN server and to the internet, including latency under load",
       "Read-only diagnostic script that explains problems in plain language",
-      "Reports enriched with AP, band, signal and roam events from UniFi",
+      "Reports enriched with AP, band, signal, and roam events from UniFi",
       "Agents can watch for new reports and triage them",
     ],
     stack: ["TypeScript", "PowerShell / sh", "UniFi"],
@@ -1045,9 +1052,9 @@ export const PROJECTS: Project[] = [
     category: "devtools",
     repo: "cinderblock/system-resource-manager",
     tagline:
-      "A machine-wide budget for heavy work, so two test suites don't start at once",
+      "A machine-wide budget for heavy work, so parallel test suites don't trample each other",
     summary:
-      "System Resource Manager is a broker daemon, CLI and tray app that hands out slots for heavy jobs on a shared computer. Work waits its turn instead of overloading the machine, which keeps test results honest. It also shows what is using the machine, and other machines and devices on the network.",
+      "System Resource Manager is a broker daemon, CLI, and tray app that hands out slots for heavy jobs on a shared computer. Work waits its turn instead of overloading the machine, which keeps test results honest. It also monitors what's using the host, alongside other machines and devices on your network.",
     features: [
       "srmctl run wraps any command and waits for free slots",
       "A lease is a connection, so crashed jobs free their slots at once",
@@ -1073,9 +1080,9 @@ export const PROJECTS: Project[] = [
     tagline:
       "Keep GitHub Actions spend on a daily allowance by pausing private-repo workflows",
     summary:
-      "Actions Spend Pacer compares month-to-date GitHub Actions spend with an allowance that grows each day. When spend is over, it disables workflows in private repos; when spend is back under, it re-enables only the ones it paused. It runs free from a public repo.",
+      "Compares month-to-date GitHub Actions spend against a daily-accruing allowance. When spend runs ahead, it pauses private-repo workflows; once you're back under budget, it re-enables only the ones it paused. Runs for free from a public repo.",
     features: [
-      "Daily-growing allowance, default $1 times the day of the month",
+      "Daily-accruing allowance (default: $1 × day of the month)",
       "Re-enables only workflows it disabled itself",
       "Redacts private repo names in public logs by default",
       "Dry-run mode that lists what would be paused",
@@ -1098,11 +1105,11 @@ export const PROJECTS: Project[] = [
     repo: "cinderblock/ghostcom",
     tagline: "Create virtual COM ports on Windows from Node.js and Bun",
     summary:
-      "GhostCOM creates serial ports that Windows and its apps see as real COM ports, while your Node.js or Bun code drives the other end as a stream. It is useful for testing serial tools and firmware loaders without hardware.",
+      "GhostCOM creates serial ports that Windows and its apps see as real COM ports, while your Node.js or Bun code drives the other end as a stream. Built for testing serial tools and firmware loaders without hardware.",
     features: [
       "Ports appear in Device Manager and open in any app",
       "Native duplex stream over a kernel driver, independent of baud rate",
-      "Events for every baud, DTR/RTS and flow-control change",
+      "Events for every baud, DTR/RTS, and flow-control change",
       "Null-modem signal crossover",
     ],
     stack: ["C (KMDF driver)", "Rust (napi-rs)", "Node.js / Bun"],
@@ -1123,15 +1130,15 @@ export const PROJECTS: Project[] = [
     tagline:
       "A live Device Manager for Windows. Watch devices arrive and leave.",
     summary:
-      "PlugSight replaces the Windows Device Manager with a view that updates in place. New devices slide in, removed ones stay as faded ghosts for a while, and problem devices get large, clear badges.",
+      "PlugSight replaces Windows Device Manager with a view that updates in place. New devices slide in, removed ones stay as faded ghosts for a while, and problem devices get large, clear badges.",
     features: [
       "Incremental updates, never a full tree refresh",
       "Ghost entries for recently removed devices, with last-known properties",
-      "Large inline badges for errors, warnings and missing drivers",
+      "Large inline badges for errors, warnings, and missing drivers",
       "Connections view that follows USB hubs down to the physical plug",
-      "Detail panel with hardware IDs, driver and instance path",
+      "Detail panel with hardware IDs, driver, and instance path",
     ],
-    stack: ["Rust", "Tauri v2", "SolidJS", "WinRT"],
+    stack: ["Rust", "Tauri 2", "SolidJS", "WinRT"],
     license: "MIT",
     links: [
       {
@@ -1150,13 +1157,13 @@ export const PROJECTS: Project[] = [
     name: "open-task",
     category: "desktop",
     repo: "cinderblock/open-task",
-    tagline: "An open-source, fast, lightweight task manager. Windows first.",
+    tagline: "A fast, native, open-source task manager. Windows first.",
     summary:
-      "open-task is an open-source task manager that matches Windows Task Manager's feature set, aiming for Process Explorer's depth. It is a native Direct2D app that stays out of the way of the machine it measures.",
+      "Matches Windows Task Manager's breadth while aiming for Process Explorer's depth—built as a native Direct2D app that stays out of the way of the machine it measures.",
     features: [
-      "Processes as a list, tree, map or CPU history",
-      "Performance pages for CPU, memory, each disk, network, GPU and battery",
-      "Users, services, startup apps, connections and installed apps",
+      "Processes as a list, tree, map, or CPU history",
+      "Performance pages for CPU, memory, each disk, network, GPU, and battery",
+      "Users, services, startup apps, connections, and installed apps",
       "Keyboard navigation and remembered layout per monitor setup",
       "Linux runs headless today; macOS is planned",
     ],
@@ -1182,14 +1189,14 @@ export const PROJECTS: Project[] = [
     tagline:
       "Fan control as a node graph, with connections typed by physical quantity",
     summary:
-      "OpenFan describes fan control as a graph where each connection carries a physical type. A temperature cannot be wired straight into a fan duty; you add a curve that says what it means. Faults propagate instead of being hidden, and the failsafe hands control back to the board's firmware.",
+      "Models fan control as a node graph where every connection carries a physical quantity. You can't wire a temperature straight into a fan duty cycle—you add a curve that defines the mapping. Sensor faults propagate instead of failing silent, and failsafe mode hands control back to motherboard firmware.",
     features: [
       "Typed connections checked by the same rule in editor and engine",
       "Dead sensors poison outputs rather than reading as safe values",
       "Every channel is commanded or put in failsafe on every tick",
       "Uses the signed PawnIO driver, not WinRing0",
     ],
-    stack: ["Rust", "Tauri", "PawnIO"],
+    stack: ["Rust", "Tauri 2", "PawnIO"],
     license: "MIT",
     links: [
       {
@@ -1208,13 +1215,13 @@ export const PROJECTS: Project[] = [
     tagline:
       "Open-source double-entry accounting, built as a drop-in for QuickBooks Desktop",
     summary:
-      "LibreBooks is open-source accounting meant to keep the same books QuickBooks Desktop keeps, with the same forms, registers, lists and keyboard shortcuts, and no subscription. It runs as a desktop app, a headless server, or a thin client.",
+      "Open-source double-entry accounting designed to match QuickBooks Desktop's forms, registers, lists, and keyboard shortcuts—without the subscription. Runs as a desktop app, headless server, or thin client.",
     features: [
-      "QuickBooks Desktop's account, transaction and list types, one for one",
+      "QuickBooks Desktop's account, transaction, and list types, one-for-one",
       "Read-only import from QuickBooks Desktop, with balance comparison",
       "Phone-friendly web UI and passkey sign-in",
       "Keyboard-first entry with QuickBooks' shortcuts",
-      "Bank feeds, reports and backups",
+      "Bank feeds, reports, and backups",
     ],
     stack: ["Rust", "Web UI"],
     license: "MIT",
@@ -1234,12 +1241,12 @@ export const PROJECTS: Project[] = [
     repo: "cinderblock/LibreHours",
     tagline: "Self-hosted, phone-first time tracking for small teams",
     summary:
-      "LibreHours is a time tracker for small teams that works offline and sends submitted time to QuickBooks Desktop. It pairs with LibreBooks but stands on its own. Each person picks timers or running notes, and hours can go through optional approval.",
+      "Offline-capable time tracking for small teams that sends submitted hours to QuickBooks Desktop. Pairs cleanly with LibreBooks or stands on its own, with live timers or running daily notes and optional approval.",
     features: [
       "Passkey-only sign-in with invite links",
       "Timers, or running notes that become hours at day's end",
       "Works offline and installs as an app",
-      "Optional approval, rates and reports",
+      "Optional approval, rates, and reports",
       "Sends time to QuickBooks Desktop",
     ],
     stack: ["TypeScript", "PWA"],
@@ -1258,11 +1265,11 @@ export const PROJECTS: Project[] = [
     category: "ai",
     repo: "TomSawyerLabs/plan-presenter",
     tagline:
-      "Agents present plans in a clickable UI; people leave inline feedback that goes back",
+      "Agents present plans in a clickable UI; you leave inline feedback tied to exact lines",
     summary:
-      "An AI agent writes a plan, analysis or design as MDX pages with charts and diagrams. A person opens it, clicks any paragraph or chart to comment, and sends the feedback back; the agent gets it as Markdown pointing at exact source lines, edits, and the page reloads.",
+      "An AI agent writes a plan, analysis, or design as MDX pages with charts and diagrams. You click any paragraph or visual to comment, and the agent gets Markdown pinned to the exact source lines, edits the doc, and the page reloads.",
     features: [
-      "Click-anywhere feedback on text, charts and Mermaid diagrams",
+      "Click-anywhere feedback on text, charts, and Mermaid diagrams",
       "Feedback returns to the agent with exact source line references",
       "Live reload as the agent edits",
       "Private review links per reviewer",
@@ -1286,18 +1293,18 @@ export const PROJECTS: Project[] = [
     name: "Skills Editor",
     category: "ai",
     repo: "cinderblock/skills-editor",
-    tagline: "A desktop editor for AI agent skills, hooks and instructions",
+    tagline: "A desktop editor for AI agent skills, hooks, and instructions",
     summary:
-      "Skills Editor finds the skills, hooks, instructions and memory files an AI coding agent uses, and lets you edit, enable, install and share them in one window. Claude Code's formats are supported first.",
+      "Discovers your coding agent's skills, hooks, instructions, and memory files so you can edit, toggle, install, and share them in one window. Supports Claude Code's formats first.",
     features: [
-      "Finds user, project and plugin skills across the machine",
+      "Finds user, project, and plugin skills across the machine",
       "Frontmatter-aware editor for SKILL.md and supporting files",
       "Enable and disable skills without hand-editing settings",
       "Install skills from a catalog of public repos",
       "AI-assisted edits that run in the background",
       "Git-based sharing between machines",
     ],
-    stack: ["Rust", "Tauri v2", "React", "TypeScript"],
+    stack: ["Rust", "Tauri 2", "React", "TypeScript"],
     license: "MIT",
     links: [
       {
@@ -1317,17 +1324,16 @@ export const PROJECTS: Project[] = [
     category: "ai",
     repo: "cinderblock/claude-usage",
     tagline:
-      "A Windows tray app that tracks Claude subscription usage and warns before limits",
+      "A Windows tray app that tracks Claude usage windows and warns before you hit a limit",
     summary:
-      "Claude Usage sits in the system tray and shows how much of each Claude usage window is spent. It charts usage against an even pace and warns only when your current burn rate will run out before the window resets.",
+      "Claude Usage sits in the system tray and shows how much of each Claude usage window is spent. It charts usage against an even pace and warns only when your current pace will exhaust the window before it resets.",
     features: [
       "Tray badge with live 5-hour usage",
       "Charts for every limit window, with projection to reset",
       "Alerts based on burn rate, not a fixed percentage",
       "History of past windows",
-      "Scheduled messages through the Claude Code CLI",
     ],
-    stack: ["Rust", "Tauri v2", "SvelteKit"],
+    stack: ["Rust", "Tauri 2", "SvelteKit"],
     license: "MIT",
     links: [
       {
@@ -1347,7 +1353,7 @@ export const PROJECTS: Project[] = [
     category: "libs",
     repo: "cinderblock/react-smoothie",
     tagline:
-      "React wrapper for Smoothie Charts, for live streaming time-series charts",
+      "React wrapper around Smoothie Charts for live streaming time-series graphs",
     summary:
       "react-smoothie wraps Smoothie Charts in a React component for live, streaming time-series charts. Data can come in through props or a ref.",
     features: [
@@ -1378,7 +1384,8 @@ export const PROJECTS: Project[] = [
     name: "deluge-rpc-socket",
     category: "libs",
     repo: "cinderblock/node-deluge-rpc",
-    tagline: "Node.js client for the Deluge torrent daemon's binary RPC API",
+    tagline:
+      "Node.js and Bun client for the Deluge torrent daemon's binary RPC API",
     summary:
       "A Node.js and Bun client for Deluge's binary RPC socket. It works with Deluge 1.x and 2.x and detects which protocol the daemon speaks.",
     features: [

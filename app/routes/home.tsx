@@ -23,13 +23,14 @@ export default function Home() {
             </h2>
             <div className="intro__text">
               <p>
-                In the book, Tom Sawyer gets half the town to whitewash Aunt
-                Polly's fence for him, and they pay him for the privilege. We
-                run it the other way around. We build tools for our own shop and
-                our community, then publish them so anyone can pick up a brush.
+                In the book, Tom Sawyer talks half the town into whitewashing
+                Aunt Polly's fence—and charges them for the privilege. We run it
+                the other way around: we build tools for our own shop and
+                community, release them as open source, and leave extra brushes
+                out for anyone who wants to pitch in.
               </p>
               <p>
-                Tom Sawyer Labs is the open-source and public-benefit side of{" "}
+                Tom Sawyer Labs is the open-source and public-benefit arm of{" "}
                 <a href="https://twilltech.com">TWILL Technology</a>.
               </p>
             </div>
@@ -76,8 +77,8 @@ export default function Home() {
                 <span className="brushed">What we build</span>
               </h2>
               <p>
-                Everything here is open source. Most of it started because we
-                needed it in the shop.
+                Built to share. Most of it started because we needed it in the
+                shop—or out on the playa.
               </p>
             </div>
 
