@@ -64,15 +64,45 @@ the home page, whose hero is the fence.
    images, or reduce what each picket paints. Worth about 100 ms of main-thread
    time at 4× throttle; needs a trace to confirm before doing.
 
+## Results (2026-11-21)
+
+- Item 1 done (`7c4b622`): `public/_headers` gives `/assets/*` a year,
+  immutable.
+- Item 2 done (`0e8584b`): Permanent Marker and Inter latin preloaded. With no
+  network delay, the preload makes first paint wait for the fonts (FCP = LCP,
+  about 1 s, at 4x CPU), with LCP unchanged. On throttled Slow 4G (150 ms,
+  1.6 Mbps) median LCP is 2.09 s with the preload vs 2.32 s without, and
+  steadier. Kept.
+- Item 3 done in the site (`49bcb55`): one `<symbol>` in the root layout,
+  `<use>` everywhere, path data server-rendered only. Home HTML 186 → 82 KB raw,
+  Fence chunk 55 → 2.6 KB, all JS 130 → 117 KB br. The svgo part belongs in
+  the ui repo (ISSUES.md).
+
 ## Progress log
 
 - [x] Measure sizes, paint timing and caching
-- [ ] Decide which of the candidates to do (waiting on Cameron)
+- [x] 1. Cache headers
+- [x] 2. Font preloads
+- [x] 3. Logo once (site side; svgo in ui is logged in ISSUES.md)
+- [ ] Check the cache header on the live site after deploy
+- [ ] 4. Drop hydration: waiting on Cameron's call
+- [ ] 5. Picket rendering: needs a trace first
+
+## Findings / gotchas
+
+- A `<use>` of a `<symbol>` must not repeat the symbol's viewBox offset on its
+  own `<svg>`: the offset is applied twice and the logo draws 1150 units low,
+  mostly clipped. Caught by screenshot, not by `getBBox()` (which still reported
+  the full width). The client-nav test now checks the drawn box stays inside.
+- Firefox sometimes reports `use.getBoundingClientRect()` without the symbol's
+  viewBox offset even though it draws correctly, so that check skips Firefox.
+- Clicking a card before hydration does a full page load; tests that need
+  client-side navigation wait for React's `__reactFiber` key on the link.
 
 ## Open questions for the user
 
-1. Which candidates to do? Recommendation: 1–3 now (small, no trade-offs), 4 as
-   its own decision, 5 only after a trace.
+1. Item 4 (drop React hydration, about 115 KB br of JS): worth doing? Costs
+   client-side navigation.
 
 ## Things not to do
 
