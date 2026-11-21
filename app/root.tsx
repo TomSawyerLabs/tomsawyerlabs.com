@@ -1,5 +1,14 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import markerLatin from "@fontsource/permanent-marker/files/permanent-marker-latin-400-normal.woff2?url";
+import {
+  Links,
+  type LinksFunction,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+} from "react-router";
 import { GradientGlow } from "./components/GradientGlow";
 import "@fontsource-variable/inter/index.css";
 import "@fontsource-variable/jetbrains-mono/index.css";
@@ -25,6 +34,19 @@ function Review() {
     </Suspense>
   );
 }
+
+// The fonts the first screen paints with. Without a preload the browser
+// only finds them after the CSS is parsed and the page laid out, and the
+// hero's tagline (the largest thing on the first screen) waits on Permanent
+// Marker. Same files the @fontsource CSS points at, so they're fetched once.
+export const links: LinksFunction = () =>
+  [markerLatin, interLatin].map((href) => ({
+    rel: "preload",
+    href,
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous",
+  }));
 
 const footerQuotes = [
   "Do the math, change the world!",
