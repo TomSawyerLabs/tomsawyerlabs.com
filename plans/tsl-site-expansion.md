@@ -122,13 +122,21 @@ counter, Empyrean Gate, the HIL runner and clearance.
        Locally `bun add` still fails on the ui github tarball (TLS); wrangler
        was added by taking ui out of package.json for the add and restoring
        its lock entry by hand.
-8. [ ] Launch. Needs Cameron's yes, and not before the photos are in
-       (Cameron, 2026-11-15). In order: (a) merge `fence-site` into
-       `master` and push (still deploys the new site to Pages too, harmless);
-       (b) Workers Builds production branch -> `master` (Cameron, dashboard);
-       (c) remove the noindex rule in `public/_headers`, push; (d) ops: move
-       `tomsawyerlabs.com` and `www` from `pages:` to the Worker, keep `next.`
-       as an alias or drop it, apply; (e) ops: retire the Pages project.
+8. [ ] **Current:** Launch. Cameron, 2026-11-20: "let's make it official.
+       let's move to tomsawyerlabs.com" (overrides photos-first; photos come
+       later). - [x] noindex dropped (`5fab5f6`); background glow back (`7afc4fa`,
+       Cameron asked mid-launch). - [x] `fence-site` fast-forwarded onto `master` and pushed (`7afc4fa`).
+       The old Pages project built it, so tomsawyerlabs.com already serves
+       the new site; CI green; the Worker build of the same commit is live
+       on next.tomsawyerlabs.com. - [ ] Cameron: Workers Builds production branch -> `master`. - [ ] Ops: apex to the Worker (`worker: {name: tomsawyerlabs-com,
+         external: true}` in place of `pages:`, www still redirects) and a
+       tombstone for the Pages project. Staged in ops worktree
+       `tsl-apex-worker` (scratchpad `ops-apex`); dry run: 1 create
+       (worker domain), 3 deletes (Pages domain, apex CNAME, Pages
+       project). Waiting on Cameron's yes. Pushing needs
+       `ALLOW_DELETES=1` for the pre-push dry-run hook. - [ ] Afterwards: drop the tombstone entry; local `master` in the main
+       checkout is behind origin (has other threads' uncommitted work, left
+       alone).
 
 ## Open questions for Cameron
 
