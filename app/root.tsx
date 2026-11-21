@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { GradientGlow } from "./components/GradientGlow";
 import "@fontsource-variable/inter/index.css";
 import "@fontsource-variable/jetbrains-mono/index.css";
 import "@fontsource/permanent-marker/index.css";
@@ -91,6 +92,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <GradientGlow />
         {children}
         <footer className="site-footer">
           <div className="wrap">

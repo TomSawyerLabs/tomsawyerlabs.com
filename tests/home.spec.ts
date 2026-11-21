@@ -79,3 +79,33 @@ test.describe("404 page", () => {
     ).toHaveAttribute("href", "/");
   });
 });
+
+test.describe("Background glow", () => {
+  test("fades in past the fence and follows the mouse", async ({ page }) => {
+    await page.goto("/");
+    const glow = page.locator(".glow");
+    const spot = page.locator(".glow i").first();
+    await expect(glow).toBeAttached();
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    await expect
+      .poll(() => glow.evaluate((el) => Number(getComputedStyle(el).opacity)))
+      .toBeGreaterThan(0.9);
+    // Keep moving until hydration has hooked up the pointer listener.
+    let x = 900;
+    await expect(async () => {
+      await page.mouse.move((x += 7), 600);
+      await expect(spot).toHaveCSS("transform", /matrix/, { timeout: 500 });
+    }).toPass();
+  });
+
+  test("stays still for reduced motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await page.mouse.move(900, 600);
+    await page.mouse.move(100, 100);
+    await expect(page.locator(".glow i").first()).toHaveCSS(
+      "transform",
+      "none",
+    );
+  });
+});

@@ -40,6 +40,12 @@
 
   /* Hand-drawn box corners. */
   --sketchy: 255px 14px 225px 14px / 14px 225px 14px 255px;
+
+  /* The old site's glow (see "Background glow" below). */
+  --glow-1: 245 158 11 / 0.22;
+  --glow-2: 20 184 166 / 0.18;
+  --glow-3: 99 102 241 / 0.16;
+  --glow-4: 236 72 153 / 0.14;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -56,6 +62,10 @@
 
     --paper: #15171c;
     --card: #1c1f26;
+    --glow-1: 245 158 11 / 0.12;
+    --glow-2: 20 184 166 / 0.1;
+    --glow-3: 99 102 241 / 0.1;
+    --glow-4: 236 72 153 / 0.09;
     --ink: #ece7dc;
     --ink-muted: #a59f92;
     --rule: #2c3039;
@@ -70,7 +80,11 @@ html {
   font-family: var(--font-sans);
   line-height: 1.6;
   color: var(--ink);
-  background-color: var(--paper);
+  /* Paper and grain sit on the canvas, so the glow can go between them and
+     the page. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--paper);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-padding-top: 96px;
@@ -80,9 +94,81 @@ body {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-    var(--paper);
+}
+
+/* Background glow, from the old tomsawyerlabs.com: four soft spots of colour
+   behind the page (GradientGlow, app/components/GradientGlow.tsx). Each spot
+   is its own fixed layer that the pointer nudges with a transform, so moving
+   one never repaints anything. Hidden on the fence and fading in as you
+   scroll past it. */
+.glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.glow i {
+  /* Half a screen bigger on every side, so a moved layer never shows an
+     edge. Positions and sizes are in viewport units to match the old
+     full-screen gradients (ellipse sized to the farthest corner). */
+  position: absolute;
+  inset: -50vh -50vw;
+  will-change: transform;
+}
+.glow i:nth-child(1) {
+  background: radial-gradient(
+    ellipse 120vw 113vh at calc(50vw + 15vw) calc(50vh + 20vh),
+    rgb(var(--glow-1)),
+    transparent 45%
+  );
+}
+.glow i:nth-child(2) {
+  background: radial-gradient(
+    ellipse 120vw 127vh at calc(50vw + 85vw) calc(50vh + 10vh),
+    rgb(var(--glow-2)),
+    transparent 45%
+  );
+}
+.glow i:nth-child(3) {
+  background: radial-gradient(
+    ellipse 99vw 113vh at calc(50vw + 70vw) calc(50vh + 80vh),
+    rgb(var(--glow-3)),
+    transparent 45%
+  );
+}
+.glow i:nth-child(4) {
+  background: radial-gradient(
+    ellipse 99vw 127vh at calc(50vw + 30vw) calc(50vh + 90vh),
+    rgb(var(--glow-4)),
+    transparent 45%
+  );
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Each spot eases at its own pace, like the old springs. */
+  .glow i:nth-child(1) {
+    transition: transform 2.5s ease-out;
+  }
+  .glow i:nth-child(2) {
+    transition: transform 4s ease-out;
+  }
+  .glow i:nth-child(3) {
+    transition: transform 2s ease-out;
+  }
+  .glow i:nth-child(4) {
+    transition: transform 5s ease-out;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .glow {
+    animation: glow-in linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 100svh;
+  }
+}
+@keyframes glow-in {
+  from {
+    opacity: 0;
+  }
 }
 
 main {

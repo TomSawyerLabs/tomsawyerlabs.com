@@ -6,6 +6,11 @@ import { expect, test, type Page } from "@playwright/test";
 
 const API = "**/__review/comments**";
 
+// The background glow eases after the pointer with CSS transitions, and while
+// one runs, WebKit's "element is stable" check never passes in these tests.
+// Reduced motion keeps the glow still (it's covered in home.spec.ts).
+test.use({ reducedMotion: "reduce" });
+
 // Each test and browser gets a page of its own, so pins left by the others
 // can't cover the spot it clicks. (global-setup.ts empties the store.)
 const PAGES = [
