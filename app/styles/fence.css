@@ -27,12 +27,35 @@
   height: 100svh;
 }
 
-/* With JS: pin the hero and let it shrink; the spacer keeps the page's
-   content starting below the first screen. */
+/* Pin the hero so it can shrink; the spacer keeps the page's content
+   starting below the first screen. Where the browser has scroll-driven
+   animations that's CSS alone, JavaScript or not. Elsewhere (Firefox) it
+   needs Fence.tsx to scrub the animations, so only with the `js` class
+   (set in root.tsx before first paint); without either the hero is an
+   ordinary full-screen block and the animations sit at their start. */
+.fence-spacer {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .fence[data-hero] {
+    position: fixed;
+    inset: 0 0 auto 0;
+  }
+  .fence-spacer {
+    display: block;
+    height: 100svh;
+  }
+}
 .js .fence[data-hero] {
   position: fixed;
   inset: 0 0 auto 0;
+}
+.js .fence-spacer {
+  display: block;
+  height: 100svh;
+}
 
+.fence[data-hero] {
   /* How far you scroll to shrink it, and the sizes the shrink runs between.
      tan(atan2(a, b)) is a / b for two lengths, as a plain number. */
   --range: calc(100svh - var(--bar-h));
@@ -57,39 +80,38 @@
    scene stays put and the clip's bottom edge rises. Where the browser has
    scroll-driven animations these run on the compositor off the scroll
    position; elsewhere Fence.tsx scrubs them from a scroll listener. */
-.js .fence[data-hero] {
+.fence[data-hero] {
   animation: fence-slide 1s linear both paused;
 }
-.js .fence[data-hero] .fence__stage {
+.fence[data-hero] .fence__stage {
   animation: fence-unslide 1s linear both paused;
   container-type: inline-size;
 }
-.js .fence[data-hero] :is(.fence__pickets, .fence__rails) {
+.fence[data-hero] :is(.fence__pickets, .fence__rails) {
   animation: fence-rise 1s linear both paused;
 }
-.js .fence[data-hero] .fence__rails span {
+.fence[data-hero] .fence__rails span {
   animation: fence-rail 1s linear both paused;
 }
-.js .fence[data-hero] .fence__brand {
+.fence[data-hero] .fence__brand {
   animation: fence-brand 1s linear both paused;
 }
-.js .fence[data-hero] .fence__brand .fence__logo {
+.fence[data-hero] .fence__brand .fence__logo {
   animation: fence-handoff 1s linear both paused;
 }
-.js .fence[data-hero] .fence__mark {
+.fence[data-hero] .fence__mark {
   animation: fence-mark 1s linear both paused;
 }
-.js .fence[data-hero] :is(.fence__tagline, .fence__more) {
+.fence[data-hero] :is(.fence__tagline, .fence__more) {
   animation: fence-hide 1s linear both paused;
 }
-.js .fence[data-hero] .fence__nav {
+.fence[data-hero] .fence__nav {
   animation: fence-nav 1s linear both paused;
 }
 
 @supports (animation-timeline: scroll()) {
-  .js .fence[data-hero],
-  .js
-    .fence[data-hero]
+  .fence[data-hero],
+  .fence[data-hero]
     :is(
       .fence__stage,
       .fence__pickets,
@@ -185,16 +207,16 @@
   }
 }
 
-.js .fence[data-hero],
-.js .fence[data-hero] .fence__stage,
-.js .fence[data-hero] .fence__pickets,
-.js .fence[data-hero] .fence__rails,
-.js .fence[data-hero] .fence__rails span {
+.fence[data-hero],
+.fence[data-hero] .fence__stage,
+.fence[data-hero] .fence__pickets,
+.fence[data-hero] .fence__rails,
+.fence[data-hero] .fence__rails span {
   will-change: transform;
 }
-.js .fence__tagline,
-.js .fence__more,
-.js .fence__brand .fence__logo,
+.fence[data-hero] .fence__tagline,
+.fence[data-hero] .fence__more,
+.fence[data-hero] .fence__brand .fence__logo,
 .fence__mark {
   will-change: opacity;
 }
@@ -203,14 +225,6 @@
   position: absolute;
   inset: 0;
 }
-.fence-spacer {
-  display: none;
-}
-.js .fence-spacer {
-  display: block;
-  height: 100svh;
-}
-
 .fence__sky {
   position: absolute;
   inset: 0;
@@ -380,12 +394,13 @@
     drop-shadow(0 0 1.5px var(--wash-solid));
 }
 
-/* The home page's bar-sized name, exactly where fence-brand ends up. Hidden
-   without JS, where the hero doesn't shrink. */
+/* The home page's bar-sized name, exactly where fence-brand ends up. It
+   stays transparent until fence-mark fades it in, so it never shows where
+   the hero doesn't shrink. */
 .fence__mark {
   display: none;
 }
-.js .fence[data-hero] .fence__mark {
+.fence[data-hero] .fence__mark {
   display: block;
   position: absolute;
   left: 1rem;

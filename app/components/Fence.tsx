@@ -6,9 +6,11 @@ import { Link, NavLink } from "react-router";
 // name painted on it, then shrinks into the top bar as you scroll. Every
 // other page starts with it already shrunk.
 //
-// Without JavaScript the hero is an ordinary full-screen block above the
-// page (no shrinking); the `js` class on <html> (set in root.tsx before first
-// paint) is what pins it and turns the shrink on.
+// The shrink is CSS alone (fence.css) wherever the browser has scroll-driven
+// animations, JavaScript or not. The effect below is only the fallback for
+// browsers without them (Firefox); there the `js` class on <html> (set in
+// root.tsx before first paint) pins the hero, and without JavaScript it's an
+// ordinary full-screen block above the page.
 
 /** Enough pickets to cross a wide screen; the row is right-aligned and
  *  clipped on the left, so the unpainted end always shows. */

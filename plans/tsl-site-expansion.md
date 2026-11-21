@@ -45,9 +45,10 @@ counter, Empyrean Gate, the HIL runner and clearance.
   TWILL site. The June showcase branch is not used.
 - Fence hero: `app/components/Fence.tsx`, `app/styles/fence.css`. Pickets are
   CSS (clip-path tips, SVG-noise grain and lime-wash streaks); the last two
-  pickets are half-painted and bare. JS pins it and shrinks it into a 76px
-  bar on scroll, moving the logo into the corner; without JS it's a static
-  full-screen block.
+  pickets are half-painted and bare. It pins and shrinks into a 76px bar on
+  scroll, moving the logo into the corner, on CSS scroll-driven animations
+  alone (JS or not). Firefox lacks those: there JS scrubs the same
+  animations, and without JS it's a static full-screen block.
 - Theme: whitewashed paper below, Permanent Marker headings, Inter body,
   hand-drawn card corners, barn-red accent, moonlit night in dark mode.
 - Content: `app/content/projects.ts`, drafted from each repo's README by a
@@ -72,6 +73,8 @@ counter, Empyrean Gate, the HIL runner and clearance.
 - Bubble Blade is not public: no name, mechanism or details anywhere.
 - Name a client only when its patent lists Chris or Cameron.
 - No HTML `title=` tooltips.
+- If it can be done in CSS alone, do it in CSS alone; JS only where CSS
+  can't, as a fallback (Cameron, 2026-11-21).
 - Don't start a parallel TSL redesign without deciding what happens to the
   showcase branch (carried over from the TWILL plan).
 

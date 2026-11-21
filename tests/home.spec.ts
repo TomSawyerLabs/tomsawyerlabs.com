@@ -56,14 +56,28 @@ test.describe("Home page", () => {
 test.describe("Without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("the hero is a normal block and the projects still show", async ({
+  test("the hero shrinks on CSS alone where it can, else stays a block", async ({
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator("header.fence")).toHaveCSS(
-      "position",
-      "relative",
+    // The page's own scripts are off; Playwright's evaluate still runs.
+    const scrollDriven = await page.evaluate(() =>
+      CSS.supports("animation-timeline: scroll()"),
     );
+    const fence = page.locator("header.fence");
+    await expect(fence).toHaveCSS(
+      "position",
+      scrollDriven ? "fixed" : "relative",
+    );
+    if (scrollDriven) {
+      await page.mouse.wheel(0, 2000);
+      await expect
+        .poll(async () => {
+          const bar = (await fence.boundingBox())!;
+          return bar.y + bar.height;
+        })
+        .toBeLessThan(100);
+    }
     await expect(
       page.getByRole("heading", { name: "What we build" }),
     ).toBeVisible();
