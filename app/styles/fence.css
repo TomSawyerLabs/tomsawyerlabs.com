@@ -73,8 +73,11 @@
 .js .fence[data-hero] .fence__brand {
   animation: fence-brand 1s linear both paused;
 }
-.js .fence[data-hero] .fence__halo {
-  animation: fence-show 1s linear both paused;
+.js .fence[data-hero] .fence__brand .fence__logo {
+  animation: fence-handoff 1s linear both paused;
+}
+.js .fence[data-hero] .fence__mark {
+  animation: fence-mark 1s linear both paused;
 }
 .js .fence[data-hero] :is(.fence__tagline, .fence__more) {
   animation: fence-hide 1s linear both paused;
@@ -93,7 +96,8 @@
       .fence__rails,
       .fence__rails span,
       .fence__brand,
-      .fence__halo,
+      .fence__brand .fence__logo,
+      .fence__mark,
       .fence__tagline,
       .fence__more,
       .fence__nav
@@ -131,8 +135,10 @@
   }
 }
 /* The name shrinks into the bar's left corner, its height the bar's less a
-   margin. */
+   margin. It arrives a little early, so the hand-over below happens with the
+   name standing still. */
 @keyframes fence-brand {
+  85%,
   to {
     transform: translate(
         calc(1rem + var(--brand-w) * var(--brand-scale) / 2 - 50cqw),
@@ -141,12 +147,26 @@
       scale(var(--brand-scale));
   }
 }
-@keyframes fence-show {
-  from {
+/* Once the name is in the corner, the bar-sized copy fades in over it, then
+   the scaled-down one (and its halo) fades out underneath. */
+@keyframes fence-mark {
+  from,
+  86% {
     opacity: 0;
   }
+  91%,
   to {
     opacity: 1;
+  }
+}
+@keyframes fence-handoff {
+  from,
+  91% {
+    opacity: 1;
+  }
+  96%,
+  to {
+    opacity: 0;
   }
 }
 @keyframes fence-hide {
@@ -174,7 +194,8 @@
 }
 .js .fence__tagline,
 .js .fence__more,
-.fence__halo {
+.js .fence__brand .fence__logo,
+.fence__mark {
   will-change: opacity;
 }
 
@@ -340,13 +361,12 @@
 /* In the bar the logo straddles the gaps between pickets, where dark paint
    would vanish against a night sky; a whitewash halo keeps it whole. On the
    home page the halo is a second, whitewash-coloured copy behind the logo
-   that fades in as it shrinks (a fixed filter, so it's rasterized
-   once). The hero logo is scaled down ~8x by then, hence the large blur. */
+   (a fixed filter, so it's rasterized once), there from the start as a glow
+   around the big name. */
 .fence__logo.fence__halo {
   position: absolute;
   inset: 0;
   color: var(--wash-solid);
-  opacity: 0;
   pointer-events: none;
 }
 .fence__logo.fence__halo svg {
@@ -354,9 +374,27 @@
     drop-shadow(0 0 10px var(--wash-solid));
   opacity: 1;
 }
-.fence:not([data-hero]) .fence__logo svg {
+.fence:not([data-hero]) .fence__logo svg,
+.fence__mark svg {
   filter: drop-shadow(0 0 2px var(--wash-solid))
     drop-shadow(0 0 1.5px var(--wash-solid));
+}
+
+/* The home page's bar-sized name, exactly where fence-brand ends up. Hidden
+   without JS, where the hero doesn't shrink. */
+.fence__mark {
+  display: none;
+}
+.js .fence[data-hero] .fence__mark {
+  display: block;
+  position: absolute;
+  left: 1rem;
+  top: calc(var(--bar-h) / 2 + 4px);
+  width: calc((var(--bar-h) - 14px) * 1.3125);
+  translate: 0 -50%;
+  color: var(--paint);
+  line-height: 0;
+  pointer-events: none;
 }
 
 /* Every page but the home page: the logo just sits in the bar. */

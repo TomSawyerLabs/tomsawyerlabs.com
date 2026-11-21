@@ -235,6 +235,11 @@ Out:
   a scroll listener in `Fence.tsx`. Measure with
   `bun run perf:scroll <url> [light|dark]`. Don't animate the fence's
   height, `--p`-driven CSS, or a filter radius per frame again.
+- Small logo looked jagged in the bar (Cameron, 2026-11-20): the hero name is
+  rasterized at full size and the compositor scales it down ~8x. Fix: the
+  name reaches the corner at 85% of the shrink, then a bar-sized copy
+  (`.fence__mark`) fades in over it and the scaled one fades out. The
+  halo now shows from the start, as a glow around the big name (his ask).
 - `tests/review.spec.ts` "server is down", "answer is lost" and "half-written
   comment" fail on a clean checkout too (2026-11-20), not from the fence work.
 

@@ -107,6 +107,15 @@ export function Fence({ hero = false }: { hero?: boolean }) {
             </Link>
           </BrandTag>
 
+          {/* The bar's own copy of the name, drawn at bar size. The hero
+              name is a big layer the compositor scales down ~8x, which comes
+              out jagged, so at the end of the shrink it hands over to this. */}
+          {hero && (
+            <div className="fence__mark" aria-hidden="true">
+              <Logo className="fence__logo" />
+            </div>
+          )}
+
           {hero && (
             <>
               <p className="fence__tagline">
