@@ -84,7 +84,7 @@ the home page, whose hero is the fence.
 - [x] 1. Cache headers
 - [x] 2. Font preloads
 - [x] 3. Logo once (site side; svgo in ui is logged in ISSUES.md)
-- [ ] Check the cache header on the live site after deploy
+- [x] Live check after deploy (`e80eaae`, 2026-11-21): assets immutable, HTML 82 KB, one symbol + 3 uses, 2 preloads
 - [ ] 4. Drop hydration: waiting on Cameron's call
 - [ ] 5. Picket rendering: needs a trace first
 
