@@ -14,6 +14,11 @@ the home page, whose hero is the fence.
   throttle, local static server (no network delay), 3–5 runs each. Measured
   2026-11-21.
 
+## Decisions already made (don't re-ask)
+
+- Keep React hydration and client-side page changes (Cameron, 2026-11-21:
+  "I like hydration and fast page changes"). Item 4 is dropped.
+
 ## Findings (measured)
 
 ### Transfer sizes, home page (Brotli)
@@ -85,8 +90,8 @@ the home page, whose hero is the fence.
 - [x] 2. Font preloads
 - [x] 3. Logo once (site side; svgo in ui is logged in ISSUES.md)
 - [x] Live check after deploy (`e80eaae`, 2026-11-21): assets immutable, HTML 82 KB, one symbol + 3 uses, 2 preloads
-- [ ] 4. Drop hydration: waiting on Cameron's call
-- [ ] 5. Picket rendering: needs a trace first
+- [x] 4. Drop hydration: dropped, see Decisions
+- [ ] 5. Picket rendering: needs a trace first; waiting on Cameron's go-ahead
 
 ## Findings / gotchas
 
@@ -101,8 +106,9 @@ the home page, whose hero is the fence.
 
 ## Open questions for the user
 
-1. Item 4 (drop React hydration, about 115 KB br of JS): worth doing? Costs
-   client-side navigation.
+1. Item 5 (trace the first-paint render work, about 0.2–0.45 s at 4x CPU,
+   then make the pickets cheaper if they're the cause): go ahead?
+   Recommendation: yes.
 
 ## Things not to do
 
