@@ -5,8 +5,14 @@
   /* 0 = full hero, 1 = top bar. Static: the shrink is the fence-*
      animations below, which only move layers and never touch this. */
   --p: 1;
-  --picket-w: clamp(44px, 4.6vw, 64px);
   --picket-gap: clamp(7px, 0.8vw, 11px);
+  /* --pickets (the count, set by Fence.tsx) covers any ordinary screen at
+     the natural width. On a very wide one (or zoomed far out) the pickets
+     widen just enough that the row still reaches the left edge. */
+  --picket-w: max(
+    clamp(44px, 4.6vw, 64px),
+    100vw / (var(--pickets) - 1) - var(--picket-gap)
+  );
   --tip: clamp(16px, 1.6vw, 22px);
   --sky-h: 13svh;
 

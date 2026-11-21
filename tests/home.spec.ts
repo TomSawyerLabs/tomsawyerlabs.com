@@ -42,6 +42,22 @@ test.describe("Home page", () => {
     expect(brand.y + brand.height).toBeLessThan(80);
   });
 
+  test("the fence reaches the left edge on very wide screens", async ({
+    page,
+  }) => {
+    for (const width of [1280, 3440, 5120, 7680]) {
+      await page.setViewportSize({ width, height: 1440 });
+      for (const path of ["/", "/practice-field"]) {
+        await page.goto(path);
+        const left = await page
+          .locator(".picket")
+          .first()
+          .evaluate((el) => el.getBoundingClientRect().left);
+        expect(left, `${path} at ${width}px`).toBeLessThanOrEqual(0);
+      }
+    }
+  });
+
   test("lists projects that link to their pages", async ({ page }) => {
     await page.getByRole("link", { name: /pFMS/ }).first().click();
     await expect(page).toHaveURL(/\/pfms$/);

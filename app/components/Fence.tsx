@@ -12,9 +12,11 @@ import { Link, NavLink } from "react-router";
 // root.tsx before first paint) pins the hero, and without JavaScript it's an
 // ordinary full-screen block above the page.
 
-/** Enough pickets to cross a wide screen; the row is right-aligned and
- *  clipped on the left, so the unpainted end always shows. */
-const PICKETS = 44;
+/** Enough pickets to cross a wide screen at their natural width; the row is
+ *  right-aligned and clipped on the left, so the unpainted end always shows.
+ *  Wider than that, fence.css widens each picket so the row still reaches
+ *  the left edge. */
+const PICKETS = 60;
 
 /** Deterministic per-picket variety, so the server and client agree. */
 function picketStyle(i: number): React.CSSProperties {
@@ -84,7 +86,12 @@ export function Fence({ hero = false }: { hero?: boolean }) {
 
   return (
     <>
-      <header ref={ref} className="fence" data-hero={hero ? "" : undefined}>
+      <header
+        ref={ref}
+        className="fence"
+        data-hero={hero ? "" : undefined}
+        style={{ "--pickets": PICKETS } as React.CSSProperties}
+      >
         <div className="fence__stage">
           <div className="fence__sky" aria-hidden="true" />
           <div className="fence__rails" aria-hidden="true">
