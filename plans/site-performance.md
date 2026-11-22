@@ -91,7 +91,48 @@ the home page, whose hero is the fence.
 - [x] 3. Logo once (site side; svgo in ui is logged in ISSUES.md)
 - [x] Live check after deploy (`e80eaae`, 2026-11-21): assets immutable, HTML 82 KB, one symbol + 3 uses, 2 preloads
 - [x] 4. Drop hydration: dropped, see Decisions
-- [ ] 5. Picket rendering: needs a trace first; waiting on Cameron's go-ahead
+- [x] 5. First-paint trace (go-ahead 2026-11-22). Script: scratchpad
+      `firstpaint.mjs` (static server on :4817 over `build/client`, Chrome
+      trace, 4x CPU, CSS-override variants)
+- [ ] 5a/5b. Waiting on Cameron's go-ahead
+
+## First-paint trace (2026-11-22)
+
+JS off, 4x CPU, 1920×1080, medians of 5–9 interleaved runs. The machine was
+loaded (Defender, a rustc build, the :5181 dev server), so absolute times are
+inflated; compare variants, not absolutes.
+
+- The first-paint long task is mostly **Layout** (about 1.7 s of 3–4 s main
+  busy), not paint. Inside the first Layout: `performLayout` self about 630 ms,
+  `InlineNode::ShapeTextIncludingFirstLine` about 480 ms over 189 calls,
+  woff2 decode about 70 ms.
+- Hiding `<main>` (everything below the fence): Layout 1.75 s → 0.67 s.
+- Everything in Arial: Layout → about 1.0–1.2 s (text shaping is real cost).
+- Pickets: Layout unchanged; PaintImage (the noise SVGs) 230 → 7 ms, main
+  busy down about 1 s, but noisy. The picket paint is real but secondary.
+- `content-visibility: auto` on sections/categories: Layout 1.75 → 1.2–1.6 s.
+  Weak, likely because the intro and feature sit inside its viewport margin.
+- No single effect (logo filters, halo, tagline shadow, page noise, glow,
+  will-change, clip-path, wash) moved anything beyond noise.
+- Bisecting `<main>`: no hotspot. Cards about 30% of its layout, its web
+  fonts about 20%, intro/feature/sketch each within noise. It's ordinary
+  first-layout cost for that much text with cold font caches.
+- **JS on, LCP, 9 runs each** (ranges don't overlap):
+  - base: median 1.97 s (1.78–2.54)
+  - picket noise off: 1.64 s (1.48–1.92)
+  - `content-visibility: auto` on `main > .section, .category`: 1.68 s
+    (1.40–1.89)
+  - both: **1.20 s** (1.13–1.57), about 40% faster.
+
+### Proposed (item 5, from the trace)
+
+- 5a. `content-visibility: auto; contain-intrinsic-size: auto 600px` on the
+  home page's sections and categories. No visual change. Check `/#projects`
+  lands right and find-in-page works.
+- 5b. Bake the picket grain/streak noise (SVG `feTurbulence`, re-run per
+  picket on first paint) into small pre-rendered images with the same look,
+  compared by screenshot. Costs some bytes; the noise-off test is the upper
+  bound on the gain.
 
 ## Findings / gotchas
 
@@ -106,9 +147,9 @@ the home page, whose hero is the fence.
 
 ## Open questions for the user
 
-1. Item 5 (trace the first-paint render work, about 0.2–0.45 s at 4x CPU,
-   then make the pickets cheaper if they're the cause): go ahead?
-   Recommendation: yes.
+1. Do 5a (`content-visibility`) and 5b (pre-rendered picket noise)?
+   Together they take LCP from 1.97 to 1.20 s at 4x CPU. Recommendation: both;
+   5b only if the screenshots match.
 
 ## Things not to do
 
