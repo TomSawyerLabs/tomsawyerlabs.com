@@ -15,6 +15,9 @@ glow" tests, and WebKit `review.spec.ts` "a send whose answer is lost is not
 posted twice" (`Waiting to send` stayed visible). All 26 Firefox/WebKit tests
 in those files then passed with `--workers=2`.
 
+Again 2026-11-22 (`whitewash-preview` branch, full parallel run): Firefox
+"lists projects that link to their pages"; it passed 3 of 3 on its own.
+
 ## Shrink the logo's path data in @tomsawyerlabs/ui
 
 `src/logo.svg` in TomSawyerLabs/ui is 52 KB. `svgo -p 1` takes it to 27 KB
