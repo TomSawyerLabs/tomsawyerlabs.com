@@ -22,6 +22,9 @@ first frame is already the finished page).
 
 ## Decisions already made (don't re-ask)
 
+- Keep the bar name where it was (1rem from the left), not snapped to a
+  picket (2026-11-23).
+
 - Name and tagline visible from the first frame; only the wash animates.
 - Plays only when a visit starts on the home page; not on arriving or
   returning there by a link. Off for reduced motion.
@@ -81,17 +84,13 @@ first frame is already the finished page).
       (`d26e2d9`, which adds the `"previews": {}` block `wrangler preview`
       requires; without it: "Your Wrangler configuration is missing a
       `previews` block to run this command").
-- [x] Cameron likes the intro (2026-11-22). Asked: bar name centered on a
-      picket and fitting on it when zoomed out. Done (`3b3786f`): centered
-      within 1 px in Chromium, Firefox and WebKit from 390 to 7680 px; it
-      fits inside the picket once pickets outgrow it (81 px), about 5900+ CSS
-      px wide. Narrower, it overhangs evenly by up to 19 px a side.
-- [ ] Cameron checks the bar; then merge to `master`
+- [x] Cameron likes the intro (2026-11-22). Tried centering the bar name
+      on a picket (`3b3786f` on `whitewash-preview`, mod() on the picket
+      grid, centered within 1 px in all three engines); Cameron preferred
+      the original 1rem placement (2026-11-23), so it was left out.
+- [x] Shipped to `master` without the bar change (2026-11-23)
 
 ## Open questions
 
 1. Ideas if the look needs work: a ragged/soft brush edge instead of the
    straight one; slower strokes. Recommendation: see it live first.
-2. Shrink the bar name to fit a picket at every zoom? At 1920 px that's
-   about 56 px wide instead of 81. Recommendation: no, the even overhang
-   reads fine and the name stays legible.
