@@ -60,14 +60,20 @@ first frame is already the finished page).
   command for Previews is `wrangler preview`. `bun builds` lists only the
   worker's own tag, so it doesn't show preview builds; the GitHub check run
   on the commit does.
+- A branch's Preview copies the base build settings when it's first made and
+  keeps them: after the base Preview command became `bunx wrangler preview`
+  (06:24Z), the `whitewash-intro` trigger still ran `versions upload` (build
+  `4d747b8d`, 2026-11-22 10:25 PM PST). Changing the base only reaches
+  branches whose Preview doesn't exist yet.
 - Tests: 53/54 pass; the one failure was the very-wide-screens test at its
   30 s limit, fixed on `master` with `test.slow()` (`3e62855`).
 
 ## Progress
 
 - [x] Prototype (`32cb1c8`), pushed to `whitewash-intro`
-- [ ] Preview URL: Preview command set to `bunx wrangler preview`
-      (2026-11-22); building.
+- [ ] Preview URL: base Preview command fixed (2026-11-22), but the
+      branch's Preview kept the old one. Waiting on Cameron: delete the
+      `whitewash-intro` Preview so the next push remakes it.
 - [ ] Cameron reviews; then merge to `master` or tweak
 
 ## Open questions
