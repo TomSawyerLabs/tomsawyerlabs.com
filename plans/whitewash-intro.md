@@ -77,8 +77,10 @@ first frame is already the finished page).
 ## Progress
 
 - [x] Prototype (`32cb1c8`), pushed to `whitewash-intro`
-- [ ] Preview URL: base Preview command fixed (2026-11-22); building
-      `whitewash-preview`.
+- [x] Preview URL: https://whitewash-preview-tomsawyerlabs-com.isozilla.workers.dev
+      (`d26e2d9`, which adds the `"previews": {}` block `wrangler preview`
+      requires; without it: "Your Wrangler configuration is missing a
+      `previews` block to run this command").
 - [ ] Cameron reviews; then merge to `master` or tweak
 
 ## Open questions
