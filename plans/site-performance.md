@@ -18,6 +18,8 @@ the home page, whose hero is the fence.
 
 - Keep React hydration and client-side page changes (Cameron, 2026-11-21:
   "I like hydration and fast page changes"). Item 4 is dropped.
+- Keep the picket noise texture as it is (Cameron, 2026-11-22: "200ms isn't
+  that bad"). 5b is closed.
 
 ## Findings (measured)
 
