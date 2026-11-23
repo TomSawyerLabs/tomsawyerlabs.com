@@ -45,6 +45,8 @@ test.describe("Home page", () => {
   test("the fence reaches the left edge on very wide screens", async ({
     page,
   }) => {
+    // Eight page loads, some at 7680 px wide: about 30 s on a busy machine.
+    test.slow();
     for (const width of [1280, 3440, 5120, 7680]) {
       await page.setViewportSize({ width, height: 1440 });
       for (const path of ["/", "/practice-field"]) {
