@@ -105,9 +105,21 @@
   font-size: 1.25rem;
 }
 
-/* Project categories and cards */
+/* Project categories and cards. The browser skips laying out and painting a
+   category until it nears the screen, so the home page's first paint
+   doesn't wait on laying out cards below the fence. That clips what a category paints
+   to its own box, so the padding (cancelled by the negative margin) leaves
+   room for a hovered card's lift and shadow. */
+.category {
+  --bleed: 0.75rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+  padding: var(--bleed);
+  margin: calc(-1 * var(--bleed));
+}
 .category + .category {
-  margin-top: clamp(2.5rem, 6vw, 4rem);
+  /* The previous category's negative bottom margin collapses into this. */
+  margin-top: calc(clamp(2.5rem, 6vw, 4rem) - var(--bleed));
 }
 .category__head {
   display: flex;

@@ -94,7 +94,8 @@ the home page, whose hero is the fence.
 - [x] 5. First-paint trace (go-ahead 2026-11-22). Script: scratchpad
       `firstpaint.mjs` (static server on :4817 over `build/client`, Chrome
       trace, 4x CPU, CSS-override variants)
-- [ ] 5a/5b. Waiting on Cameron's go-ahead
+- [x] 5a. `content-visibility` on `.category` (Cameron: "do both", 2026-11-22)
+- [x] 5b. Dropped: not doable as proposed, see below
 
 ## First-paint trace (2026-11-22)
 
@@ -124,15 +125,26 @@ inflated; compare variants, not absolutes.
     (1.40–1.89)
   - both: **1.20 s** (1.13–1.57), about 40% faster.
 
-### Proposed (item 5, from the trace)
+### Item 5 outcome (2026-11-22)
 
-- 5a. `content-visibility: auto; contain-intrinsic-size: auto 600px` on the
-  home page's sections and categories. No visual change. Check `/#projects`
-  lands right and find-in-page works.
-- 5b. Bake the picket grain/streak noise (SVG `feTurbulence`, re-run per
-  picket on first paint) into small pre-rendered images with the same look,
-  compared by screenshot. Costs some bytes; the noise-off test is the upper
-  bound on the gain.
+- 5a done: `.category` gets `content-visibility: auto` with
+  `contain-intrinsic-size: auto 420px` (desktop categories are 230–740 px,
+  phone 400–1950). Paint containment would clip a hovered card's lift and
+  shadow, so each category has `0.75rem` padding cancelled by a negative
+  margin. Checked against the old build: all 69 card/heading boxes identical
+  at 1920/1100/800/390 px, page heights identical, `/#projects` lands at the
+  same 96 px, hover screenshot identical. Measured on a quieter machine
+  (11 runs, JS on, 4x CPU), interleaved with it switched off: LCP 1.10 →
+  1.04 s, first Layout 523 → 467 ms. Smaller than the loaded-machine A/B
+  above suggested; it's a modest, no-visual-change win.
+- 5b dropped. Baking the noise to WebP: 106–183 KB per texture at 1x,
+  300–530 KB at 2x (noise doesn't compress; Chrome's canvas encoder keeps
+  alpha lossless). Cheaper SVG noise doesn't help either (same machine, 9
+  runs, LCP): base 1.46 s, noise off 1.26 s, octaves 3/2 → 2/1 1.47 s,
+  half-resolution tile 1.41 s, grain only off 1.34 s, streaks only off
+  1.46 s, all within noise of base except noise fully off. The cost looks like
+  per-picket image painting, not the filter's size. Only removing the
+  texture (a look change) gets the ~200 ms.
 
 ## Findings / gotchas
 
@@ -147,11 +159,12 @@ inflated; compare variants, not absolutes.
 
 ## Open questions for the user
 
-1. Do 5a (`content-visibility`) and 5b (pre-rendered picket noise)?
-   Together they take LCP from 1.97 to 1.20 s at 4x CPU. Recommendation: both;
-   5b only if the screenshots match.
+(none)
 
 ## Things not to do
+
+- Don't bake the picket noise into raster images: hundreds of KB (see Item 5
+  outcome).
 
 - Don't change Cloudflare dashboard settings for caching; `_headers` in the
   repo covers it.

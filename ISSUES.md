@@ -9,6 +9,12 @@ the dev server), about 1 run in 4; passes 16/16 when run alone
 example through a call to IDBTransaction.abort.` around the same time. Flaky
 tests hide real failures, so worth finding.
 
+Also seen 2026-11-22 in one full parallel run (machine under load): Firefox
+"the logo still draws after client-side navigation", both Firefox "Background
+glow" tests, and WebKit `review.spec.ts` "a send whose answer is lost is not
+posted twice" (`Waiting to send` stayed visible). All 26 Firefox/WebKit tests
+in those files then passed with `--workers=2`.
+
 ## Shrink the logo's path data in @tomsawyerlabs/ui
 
 `src/logo.svg` in TomSawyerLabs/ui is 52 KB. `svgo -p 1` takes it to 27 KB
