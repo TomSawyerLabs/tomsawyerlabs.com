@@ -25,6 +25,8 @@ function picketStyle(i: number): React.CSSProperties {
   return {
     "--shade": shade.toFixed(2),
     "--lift": `${lift}px`,
+    // Place from the right-hand end, for the whitewash intro's order.
+    "--from-right": PICKETS - 1 - i,
   } as React.CSSProperties;
 }
 
@@ -37,6 +39,13 @@ function paintOf(i: number): "full" | "partial" | "bare" {
 
 export function Fence({ hero = false }: { hero?: boolean }) {
   const ref = useRef<HTMLElement>(null);
+
+  // The whitewash intro (fence.css) only plays when a visit starts on the
+  // home page: any other page's fence ends it, so arriving at or returning
+  // to the home page by a link shows the fence already painted.
+  useEffect(() => {
+    if (!hero) document.documentElement.classList.remove("intro");
+  }, [hero]);
 
   // The shrink is the fence-* CSS animations in fence.css, driven by the
   // scroll position where the browser supports scroll-driven animations.

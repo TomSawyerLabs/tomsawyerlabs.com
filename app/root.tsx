@@ -98,10 +98,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           media="(prefers-color-scheme: dark)"
         />
         {/* Before first paint: lets CSS pin and shrink the fence only when
-            JavaScript will be there to drive it. */}
+            JavaScript will be there to drive it, and play the home page's
+            whitewash intro (fence.css) if this first page is the home page. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: "document.documentElement.classList.add('js')",
+            __html: "document.documentElement.classList.add('js','intro')",
           }}
         />
         {import.meta.env.DEV && (

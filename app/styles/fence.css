@@ -348,6 +348,36 @@
   }
 }
 
+/* The intro: when a visit starts on the home page, Tom whitewashes the
+   fence, one brush stroke down each picket, left to right, ending where he
+   gave up. The name and tagline are there from the first frame; only the
+   wash is animated. `intro` is set on <html> before first paint (root.tsx)
+   and dropped by any other page's fence (Fence.tsx). --stroke counts the
+   on-screen pickets from the left: the row is right-aligned, so it's how
+   many fit on screen less the picket's place from the right
+   (tan(atan2(a, b)) is a / b as a plain number). */
+@media (prefers-reduced-motion: no-preference) {
+  .intro .fence[data-hero] .picket::after {
+    --stroke: max(
+      0,
+      tan(atan2(100vw, var(--picket-w) + var(--picket-gap))) - var(--from-right)
+    );
+    animation: whitewash calc(0.26s + var(--shade) * 0.12s)
+      cubic-bezier(0.3, 0.7, 0.4, 1) both;
+    animation-delay: calc(0.2s + var(--stroke) * 24ms);
+  }
+}
+/* A brush stroke: the wash is uncovered top to bottom, the streaks staying
+   put. (A slide-in transform measured no smoother on screen at 4x CPU.) */
+@keyframes whitewash {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
 /* The painted name. Laid out at full hero size, centered; the fence-brand
    animation moves it into the bar's corner as you scroll. Units are svh (not %)
    so its untransformed box doesn't move as the header shrinks. */
