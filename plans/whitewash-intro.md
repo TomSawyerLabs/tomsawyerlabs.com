@@ -51,14 +51,23 @@ first frame is already the finished page).
   the 750 ms of strokes for both, longest gap 50–67 ms. No smoother, and
   the slide moves the streak texture, so `clip-path` it is. Chrome reports
   composite failure 524288 for the transform version.
+- Preview builds use Cloudflare's Worker Previews (open beta; the "Previews
+  Base" tab in Build settings). Each branch gets its own trigger on its own
+  Preview id (`fd31ca34…` for `whitewash-intro`, not the worker's
+  `ea32bb24…`), so `bunx wrangler versions upload` fails the CI tag check:
+  "The name in your wrangler.jsonc file (tomsawyerlabs-com) must match the
+  name of your Worker" (build `625d3d3f`, 2026-11-22 8:13 PM PST). The
+  command for Previews is `wrangler preview`. `bun builds` lists only the
+  worker's own tag, so it doesn't show preview builds; the GitHub check run
+  on the commit does.
 - Tests: 53/54 pass; the one failure was the very-wide-screens test at its
   30 s limit, fixed on `master` with `test.slow()` (`3e62855`).
 
 ## Progress
 
 - [x] Prototype (`32cb1c8`), pushed to `whitewash-intro`
-- [ ] Preview URL: Workers Builds has preview (non-production branch)
-      builds off, so the branch push built nothing. Waiting on Cameron.
+- [ ] Preview URL: Preview command set to `bunx wrangler preview`
+      (2026-11-22); building.
 - [ ] Cameron reviews; then merge to `master` or tweak
 
 ## Open questions
