@@ -10,7 +10,7 @@ first frame is already the finished page).
 
 ## Environment
 
-- Branch `whitewash-intro` (from `master` `1ea709e`), worktree
+- Branch `whitewash-preview` (was `whitewash-intro`; from `master` `1ea709e`), worktree
   `C:\Users\camer\.t3\worktrees\tomsawyerlabs.com\whitewash-intro`. Its own
   worktree so the :5181 review dev server (in the `fence-site` worktree)
   doesn't show the prototype.
@@ -64,16 +64,21 @@ first frame is already the finished page).
   keeps them: after the base Preview command became `bunx wrangler preview`
   (06:24Z), the `whitewash-intro` trigger still ran `versions upload` (build
   `4d747b8d`, 2026-11-22 10:25 PM PST). Changing the base only reaches
-  branches whose Preview doesn't exist yet.
+  branches whose Preview doesn't exist yet. Deleting the Preview
+  (`wrangler preview delete`) doesn't remove the branch's build trigger
+  either: the next push (build `3cd58ca6`) reused it unchanged. So the work
+  moved to a new branch, `whitewash-preview`. Pushing a new branch with no
+  new commits builds nothing; it takes a commit.
+- Leftover on Cloudflare: the `whitewash-intro` branch trigger (`e95e3e14`,
+  still `versions upload`). Remove it once the new branch builds.
 - Tests: 53/54 pass; the one failure was the very-wide-screens test at its
   30 s limit, fixed on `master` with `test.slow()` (`3e62855`).
 
 ## Progress
 
 - [x] Prototype (`32cb1c8`), pushed to `whitewash-intro`
-- [ ] Preview URL: base Preview command fixed (2026-11-22), but the
-      branch's Preview kept the old one. Waiting on Cameron: delete the
-      `whitewash-intro` Preview so the next push remakes it.
+- [ ] Preview URL: base Preview command fixed (2026-11-22); building
+      `whitewash-preview`.
 - [ ] Cameron reviews; then merge to `master` or tweak
 
 ## Open questions
