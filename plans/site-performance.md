@@ -2,12 +2,12 @@
 
 ## Goal
 
-Make tomsawyerlabs.com (the `fence-site` branch) load and paint faster, mainly
+Make tomsawyerlabs.com load and paint faster, mainly
 the home page, whose hero is the fence.
 
 ## Environment / context
 
-- Worktree: `C:\Users\camer\.t3\worktrees\tomsawyerlabs.com\fence-site`, branch `fence-site`.
+- Worktree: `C:\Users\camer\.t3\worktrees\tomsawyerlabs.com\fence-site`, branch `master` (was `fence-site`, deleted 2026-11-22).
 - Hosting: Cloudflare Workers static assets (`wrangler.jsonc`), no Worker script.
   Every page is prerendered HTML in `build/client`, hydrated by React Router.
 - Measurements below: production build, headless Chromium 1920×1080, 4× CPU

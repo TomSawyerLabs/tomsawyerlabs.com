@@ -39,7 +39,8 @@ counter, Empyrean Gate, the HIL runner and clearance.
 
 ## Current build
 
-- Branch `fence-site`, worktree
+- Branch `master` (built on `fence-site`, deleted 2026-11-22 once Workers
+  Builds deployed from `master`), worktree
   `C:\Users\camer\.t3\worktrees\tomsawyerlabs.com\fence-site`, started from
   master and rebuilt from `ssg-base` (React Router 8, Vite 8, TS 7), like the
   TWILL site. The June showcase branch is not used.
@@ -131,9 +132,9 @@ counter, Empyrean Gate, the HIL runner and clearance.
        Cameron asked mid-launch). - [x] `fence-site` fast-forwarded onto `master` and pushed (`7afc4fa`).
        The old Pages project built it, so tomsawyerlabs.com already serves
        the new site; CI green; the Worker build of the same commit is live
-       on next.tomsawyerlabs.com. - [ ] Cameron: Workers Builds production branch -> `master`
-       (unconfirmed; the builds triggers API returned an empty list on
-       2026-11-20, so check the dashboard). - [x] Ops `fc4d2ef1` (Cameron's yes, 2026-11-20 7:42 PM PST (03:42Z)):
+       on next.tomsawyerlabs.com. - [x] Cameron: Workers Builds production branch -> `master`
+       (2026-11-22; the triggers API confirms `branch_includes: ["master"]`).
+       `fence-site` branch then deleted. - [x] Ops `fc4d2ef1` (Cameron's yes, 2026-11-20 7:42 PM PST (03:42Z)):
        apex -> Worker (`worker: {name: tomsawyerlabs-com, external: true,
        provision: true}` in place of `pages:`, www still 301s), next.tomsawyerlabs.com
        dropped (Cameron: "disable next.tomsawyerlabs.com"), Pages project
