@@ -81,9 +81,17 @@ first frame is already the finished page).
       (`d26e2d9`, which adds the `"previews": {}` block `wrangler preview`
       requires; without it: "Your Wrangler configuration is missing a
       `previews` block to run this command").
-- [ ] Cameron reviews; then merge to `master` or tweak
+- [x] Cameron likes the intro (2026-11-22). Asked: bar name centered on a
+      picket and fitting on it when zoomed out. Done (`3b3786f`): centered
+      within 1 px in Chromium, Firefox and WebKit from 390 to 7680 px; it
+      fits inside the picket once pickets outgrow it (81 px), about 5900+ CSS
+      px wide. Narrower, it overhangs evenly by up to 19 px a side.
+- [ ] Cameron checks the bar; then merge to `master`
 
 ## Open questions
 
 1. Ideas if the look needs work: a ragged/soft brush edge instead of the
    straight one; slower strokes. Recommendation: see it live first.
+2. Shrink the bar name to fit a picket at every zoom? At 1920 px that's
+   about 56 px wide instead of 81. Recommendation: no, the even overhang
+   reads fine and the name stays legible.
