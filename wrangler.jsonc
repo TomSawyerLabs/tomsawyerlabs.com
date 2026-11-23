@@ -15,4 +15,7 @@
   },
   "preview_urls": true,
   "workers_dev": true,
+  // Required by `wrangler preview`; empty means previews use the settings
+  // above (and the base config in the dashboard).
+  "previews": {},
 }
